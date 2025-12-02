@@ -8,6 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import Strategy from "./pages/Strategy";
 import ContentHub from "./pages/ContentHub";
 import CalendarView from "./pages/CalendarView";
+import AIGenerator from "./pages/AIGenerator";
+import ProjectTracking from "./pages/ProjectTracking";
+import Analytics from "./pages/Analytics";
 import AISettings from "./pages/AISettings";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/dashboard/strategy" element={<Strategy />} />
           <Route path="/dashboard/content" element={<ContentHub />} />
           <Route path="/dashboard/calendar" element={<CalendarView />} />
+          <Route path="/dashboard/ai-generator" element={<AIGenerator />} />
+          <Route path="/dashboard/tracking" element={<ProjectTracking />} />
+          <Route path="/dashboard/analytics" element={<Analytics />} />
           <Route path="/dashboard/settings" element={<AISettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
