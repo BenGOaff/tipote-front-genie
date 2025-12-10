@@ -7,7 +7,14 @@ import {
   Settings, 
   CheckSquare,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Share2,
+  Mail,
+  PenTool,
+  Video,
+  Package,
+  Layers,
+  Lock
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -22,11 +29,12 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 
 const mainItems = [
   { title: "Tableau de bord", url: "/dashboard", icon: LayoutDashboard },
   { title: "Stratégie", url: "/dashboard/strategy", icon: Target },
-  { title: "Contenu Hub", url: "/dashboard/content", icon: FileText },
+  { title: "Content Hub", url: "/dashboard/content", icon: FileText },
   { title: "Calendrier", url: "/dashboard/calendar", icon: Calendar },
 ];
 
@@ -34,6 +42,15 @@ const toolsItems = [
   { title: "Génération IA", url: "/dashboard/ai-generator", icon: Brain },
   { title: "Suivi Projet", url: "/dashboard/tracking", icon: CheckSquare },
   { title: "Analytics", url: "/dashboard/analytics", icon: TrendingUp },
+];
+
+const modulesItems = [
+  { title: "Réseaux sociaux", url: "/dashboard/modules/social", icon: Share2, active: true },
+  { title: "Emails", url: "/dashboard/modules/emails", icon: Mail, active: true },
+  { title: "Blog", url: "/dashboard/modules/blog", icon: PenTool, active: false },
+  { title: "Scripts vidéos", url: "/dashboard/modules/video-scripts", icon: Video, active: false },
+  { title: "Création d'offres", url: "/dashboard/modules/offers", icon: Package, active: false },
+  { title: "Funnels", url: "/dashboard/modules/funnels", icon: Layers, active: false },
 ];
 
 export function AppSidebar() {
@@ -51,7 +68,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -88,6 +105,36 @@ export function AppSidebar() {
                     >
                       <item.icon className="w-5 h-5" />
                       <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="flex items-center justify-between">
+            <span>Modules</span>
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0">V1</Badge>
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {modulesItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span className="flex-1">{item.title}</span>
+                      {item.active ? (
+                        <span className="w-2 h-2 rounded-full bg-success" />
+                      ) : (
+                        <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
