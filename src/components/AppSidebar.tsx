@@ -1,20 +1,10 @@
 import { 
-  LayoutDashboard, 
-  Brain, 
-  Calendar, 
-  FileText, 
+  Sun, 
   Target, 
-  Settings, 
-  CheckSquare,
-  TrendingUp,
   Sparkles,
-  Share2,
-  Mail,
-  PenTool,
-  Video,
-  Package,
-  Layers,
-  Lock
+  FolderOpen,
+  Settings, 
+  BarChart3
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -22,35 +12,18 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
 
 const mainItems = [
-  { title: "Tableau de bord", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Stratégie", url: "/dashboard/strategy", icon: Target },
-  { title: "Content Hub", url: "/dashboard/content", icon: FileText },
-  { title: "Calendrier", url: "/dashboard/calendar", icon: Calendar },
-];
-
-const toolsItems = [
-  { title: "Génération IA", url: "/dashboard/ai-generator", icon: Brain },
-  { title: "Suivi Projet", url: "/dashboard/tracking", icon: CheckSquare },
-  { title: "Analytics", url: "/dashboard/analytics", icon: TrendingUp },
-];
-
-const modulesItems = [
-  { title: "Réseaux sociaux", url: "/dashboard/modules/social", icon: Share2, active: true },
-  { title: "Emails", url: "/dashboard/modules/emails", icon: Mail, active: true },
-  { title: "Blog", url: "/dashboard/modules/blog", icon: PenTool, active: false },
-  { title: "Scripts vidéos", url: "/dashboard/modules/video-scripts", icon: Video, active: false },
-  { title: "Création d'offres", url: "/dashboard/modules/offers", icon: Package, active: false },
-  { title: "Funnels", url: "/dashboard/modules/funnels", icon: Layers, active: false },
+  { title: "Aujourd'hui", url: "/dashboard", icon: Sun },
+  { title: "Ma Stratégie", url: "/dashboard/strategy", icon: Target },
+  { title: "Créer", url: "/dashboard/create", icon: Sparkles },
+  { title: "Mes Contenus", url: "/dashboard/content", icon: FolderOpen },
 ];
 
 export function AppSidebar() {
@@ -68,73 +41,21 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="overflow-y-auto">
+      <SidebarContent className="overflow-y-auto px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                      end={item.url === "/dashboard"}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors hover:bg-sidebar-accent"
                       activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
                       <item.icon className="w-5 h-5" />
                       <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Outils</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {toolsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between">
-            <span>Modules</span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">V1</Badge>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {modulesItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="flex-1">{item.title}</span>
-                      {item.active ? (
-                        <span className="w-2 h-2 rounded-full bg-success" />
-                      ) : (
-                        <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -144,13 +65,25 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-1">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <NavLink 
+                to="/dashboard/analytics"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-sidebar-accent"
+                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+              >
+                <BarChart3 className="w-5 h-5" />
+                <span>Analytics</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink 
                 to="/dashboard/settings"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-sidebar-accent"
                 activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
               >
                 <Settings className="w-5 h-5" />
