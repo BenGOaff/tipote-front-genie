@@ -1,86 +1,111 @@
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { 
-  FileText, 
-  Mail, 
-  Video, 
-  Image, 
-  MoreVertical, 
   Plus, 
-  Filter,
-  List,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight
+  Search, 
+  List, 
+  CalendarDays, 
+  MoreVertical, 
+  Edit, 
+  Trash2,
+  FileText,
+  Mail,
+  Video,
+  MessageSquare,
+  Clock
 } from "lucide-react";
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useContents, Content } from "@/hooks/useContents";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const typeIcons: Record<string, any> = {
+  post: MessageSquare,
+  email: Mail,
+  article: FileText,
+  video: Video,
+};
+
+const statusColors: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground",
+  scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  published: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+};
+
+const statusLabels: Record<string, string> = {
+  draft: "Brouillon",
+  scheduled: "Planifié",
+  published: "Publié",
+};
 
 const MyContent = () => {
   const [view, setView] = useState<"list" | "calendar">("list");
-  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-  const currentMonth = "Décembre 2025";
+  const [search, setSearch] = useState("");
+  const [editingContent, setEditingContent] = useState<Content | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Content | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  
+  const { contents, loading, updateContent, deleteContent } = useContents();
 
-  const contentItems = [
-    {
-      type: "Post",
-      title: "5 stratégies pour doubler votre engagement",
-      platform: "LinkedIn",
-      status: "Publié",
-      date: "Il y a 2 jours",
-      engagement: "1.2K",
-    },
-    {
-      type: "Email",
-      title: "Newsletter : Nouveautés du mois",
-      platform: "Email",
-      status: "Planifié",
-      date: "Dans 3 jours",
-      engagement: "-",
-    },
-    {
-      type: "Article",
-      title: "Guide complet du content marketing en 2025",
-      platform: "Blog",
-      status: "Brouillon",
-      date: "Modifié aujourd'hui",
-      engagement: "-",
-    },
-    {
-      type: "Post",
-      title: "Témoignage client : +300% de ROI",
-      platform: "Instagram",
-      status: "Publié",
-      date: "Il y a 1 semaine",
-      engagement: "856",
-    },
-    {
-      type: "Video",
-      title: "Script YouTube : Introduction IA",
-      platform: "YouTube",
-      status: "En cours",
-      date: "Modifié hier",
-      engagement: "-",
-    },
-  ];
+  const filteredContents = contents.filter(c => 
+    c.title.toLowerCase().includes(search.toLowerCase()) ||
+    (c.content && c.content.toLowerCase().includes(search.toLowerCase()))
+  );
 
-  // Mock calendar data
-  const calendarData = Array.from({ length: 35 }, (_, i) => {
-    const day = i - 2;
-    const hasContent = day > 0 && day <= 31 && Math.random() > 0.7;
-    return {
-      day: day > 0 && day <= 31 ? day : null,
-      isToday: day === 15,
-      contents: hasContent ? [
-        { type: "Post", platform: "LinkedIn", time: "09:00" },
-        ...(Math.random() > 0.5 ? [{ type: "Email", platform: "Newsletter", time: "14:00" }] : []),
-      ] : [],
-    };
-  });
+  const openEdit = (content: Content) => {
+    setEditingContent(content);
+    setEditTitle(content.title);
+    setEditBody(content.content || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingContent) return;
+    await updateContent(editingContent.id, {
+      title: editTitle,
+      content: editBody,
+    });
+    setEditingContent(null);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    await deleteContent(deleteConfirm.id);
+    setDeleteConfirm(null);
+  };
+
+  const groupByDate = (items: Content[]) => {
+    const groups: Record<string, Content[]> = {};
+    items.forEach(item => {
+      const date = format(new Date(item.created_at), "yyyy-MM-dd");
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(item);
+    });
+    return groups;
+  };
+
+  const grouped = groupByDate(filteredContents);
 
   return (
     <SidebarProvider>
@@ -93,273 +118,214 @@ const MyContent = () => {
             <div className="ml-4 flex-1">
               <h1 className="text-xl font-display font-bold">Mes Contenus</h1>
             </div>
-            <div className="flex items-center gap-3">
-              {/* View Toggle */}
-              <div className="flex items-center border border-border rounded-lg p-1">
-                <Button 
-                  variant={view === "list" ? "secondary" : "ghost"} 
+            <Link to="/dashboard/create">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Créer
+              </Button>
+            </Link>
+          </header>
+
+          <div className="p-6 max-w-6xl mx-auto space-y-6">
+            {/* Filters & Toggle */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={view === "list" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setView("list")}
-                  className="h-8"
                 >
                   <List className="w-4 h-4 mr-2" />
                   Liste
                 </Button>
-                <Button 
-                  variant={view === "calendar" ? "secondary" : "ghost"} 
+                <Button
+                  variant={view === "calendar" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setView("calendar")}
-                  className="h-8"
                 >
                   <CalendarDays className="w-4 h-4 mr-2" />
                   Calendrier
                 </Button>
               </div>
-              <Link to="/dashboard/create">
-                <Button variant="hero">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Créer
-                </Button>
-              </Link>
             </div>
-          </header>
 
-          <div className="p-6 space-y-6 max-w-7xl mx-auto">
-            {/* Stats Cards */}
+            {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Total", value: "127", icon: FileText, color: "gradient-primary" },
-                { label: "Publiés", value: "89", icon: Image, color: "gradient-secondary" },
-                { label: "Planifiés", value: "24", icon: Video, color: "gradient-primary" },
-                { label: "Brouillons", value: "14", icon: Mail, color: "gradient-secondary" },
-              ].map((stat, i) => (
-                <Card key={i} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                    </div>
-                    <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
-                      <stat.icon className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{contents.length}</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">Brouillons</p>
+                <p className="text-2xl font-bold">{contents.filter(c => c.status === "draft").length}</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">Planifiés</p>
+                <p className="text-2xl font-bold">{contents.filter(c => c.status === "scheduled").length}</p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">Publiés</p>
+                <p className="text-2xl font-bold">{contents.filter(c => c.status === "published").length}</p>
+              </Card>
             </div>
 
-            {view === "list" ? (
-              /* List View */
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold">Tous vos contenus</h2>
-                  <Button variant="outline" size="sm">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filtrer
-                  </Button>
-                </div>
-
-                <Tabs defaultValue="all" className="w-full">
-                  <TabsList className="mb-6">
-                    <TabsTrigger value="all">Tous</TabsTrigger>
-                    <TabsTrigger value="posts">Posts</TabsTrigger>
-                    <TabsTrigger value="emails">Emails</TabsTrigger>
-                    <TabsTrigger value="articles">Articles</TabsTrigger>
-                    <TabsTrigger value="videos">Vidéos</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="all" className="space-y-4">
-                    {contentItems.map((item, i) => (
-                      <div
-                        key={i}
-                        className="p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Badge variant={
-                                item.status === "Publié" ? "default" : 
-                                item.status === "Planifié" ? "secondary" : 
-                                item.status === "En cours" ? "outline" : "outline"
-                              }>
-                                {item.status}
-                              </Badge>
-                              <span className="text-sm text-muted-foreground">{item.type}</span>
-                              <span className="text-sm text-muted-foreground">•</span>
-                              <span className="text-sm text-muted-foreground">{item.platform}</span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>{item.date}</span>
-                              {item.engagement !== "-" && (
-                                <>
-                                  <span>•</span>
-                                  <span>{item.engagement} engagements</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </TabsContent>
-
-                  <TabsContent value="posts">
-                    <p className="text-center text-muted-foreground py-12">
-                      Filtrez vos posts réseaux sociaux
-                    </p>
-                  </TabsContent>
-
-                  <TabsContent value="emails">
-                    <p className="text-center text-muted-foreground py-12">
-                      Filtrez vos campagnes emails
-                    </p>
-                  </TabsContent>
-
-                  <TabsContent value="articles">
-                    <p className="text-center text-muted-foreground py-12">
-                      Filtrez vos articles de blog
-                    </p>
-                  </TabsContent>
-
-                  <TabsContent value="videos">
-                    <p className="text-center text-muted-foreground py-12">
-                      Filtrez vos scripts vidéo
-                    </p>
-                  </TabsContent>
-                </Tabs>
+            {/* Content List */}
+            {loading ? (
+              <Card className="p-8 text-center">
+                <p className="text-muted-foreground">Chargement...</p>
               </Card>
-            ) : (
-              /* Calendar View */
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon">
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <h2 className="text-2xl font-bold">{currentMonth}</h2>
-                    <Button variant="outline" size="icon">
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm">Aujourd'hui</Button>
-                    <Button variant="outline" size="sm">Semaine</Button>
-                    <Button variant="default" size="sm">Mois</Button>
-                  </div>
-                </div>
-
-                {/* Calendar Grid */}
-                <div className="border border-border rounded-lg overflow-hidden">
-                  {/* Days header */}
-                  <div className="grid grid-cols-7 border-b border-border bg-muted/50">
-                    {days.map((day) => (
-                      <div key={day} className="p-3 text-center text-sm font-semibold text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Calendar days */}
-                  <div className="grid grid-cols-7">
-                    {calendarData.map((cell, i) => (
-                      <div
-                        key={i}
-                        className={`min-h-[100px] p-2 border-r border-b border-border hover:bg-muted/30 transition-colors ${
-                          cell.isToday ? "bg-primary/5 border-primary/30" : ""
-                        } ${cell.day === null ? "bg-muted/20" : ""}`}
-                      >
-                        {cell.day && (
-                          <>
-                            <div className="flex items-center justify-between mb-2">
-                              <span
-                                className={`text-sm font-medium ${
-                                  cell.isToday
-                                    ? "w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
-                                    : ""
-                                }`}
-                              >
-                                {cell.day}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              {cell.contents.map((content, j) => (
-                                <div
-                                  key={j}
-                                  className="text-xs p-1.5 rounded bg-primary/10 hover:bg-primary/20 cursor-pointer transition-colors border border-primary/20"
-                                >
-                                  <div className="font-medium text-primary truncate">
-                                    {content.time} - {content.type}
-                                  </div>
-                                  <div className="text-muted-foreground truncate">{content.platform}</div>
+            ) : filteredContents.length === 0 ? (
+              <Card className="p-8 text-center">
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-bold mb-2">Aucun contenu</h3>
+                <p className="text-muted-foreground mb-4">
+                  Commencez par créer votre premier contenu
+                </p>
+                <Link to="/dashboard/create">
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Créer du contenu
+                  </Button>
+                </Link>
+              </Card>
+            ) : view === "list" ? (
+              <div className="space-y-6">
+                {Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a)).map(([date, items]) => (
+                  <div key={date}>
+                    <p className="text-sm font-medium text-muted-foreground mb-3 capitalize">
+                      {format(new Date(date), "EEEE d MMMM yyyy", { locale: fr })}
+                    </p>
+                    <div className="space-y-2">
+                      {items.map((item) => {
+                        const Icon = typeIcons[item.type] || FileText;
+                        return (
+                          <Card key={item.id} className="p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{item.title}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  {item.platform && <span className="capitalize">{item.platform}</span>}
+                                  {item.scheduled_at && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      {format(new Date(item.scheduled_at), "HH:mm")}
+                                    </span>
+                                  )}
                                 </div>
-                              ))}
+                              </div>
+                              <Badge className={statusColors[item.status]}>
+                                {statusLabels[item.status]}
+                              </Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => openEdit(item)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Modifier
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => setDeleteConfirm(item)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                          </Card>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-6">
+                <p className="text-center text-muted-foreground">
+                  Vue calendrier bientôt disponible
+                </p>
               </Card>
             )}
-
-            {/* Upcoming Content */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h3 className="text-lg font-bold mb-4">À venir cette semaine</h3>
-                <div className="space-y-3">
-                  {[
-                    { day: "Aujourd'hui", title: "Post LinkedIn : Stratégie 2025", time: "09:00" },
-                    { day: "Demain", title: "Newsletter hebdomadaire", time: "14:00" },
-                    { day: "Mercredi", title: "Article blog : Guide IA", time: "10:00" },
-                    { day: "Vendredi", title: "Post Instagram : Témoignage", time: "16:00" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
-                      <div className="flex-shrink-0">
-                        <Badge variant="outline">{item.time}</Badge>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{item.title}</p>
-                        <p className="text-sm text-muted-foreground">{item.day}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card className="p-6">
-                <h3 className="text-lg font-bold mb-4">Statistiques du mois</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Contenus publiés</p>
-                      <p className="text-2xl font-bold">24</p>
-                    </div>
-                    <Badge className="gradient-primary text-primary-foreground">+12%</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Contenus planifiés</p>
-                      <p className="text-2xl font-bold">18</p>
-                    </div>
-                    <Badge className="gradient-secondary text-secondary-foreground">Actif</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Taux de complétion</p>
-                      <p className="text-2xl font-bold">92%</p>
-                    </div>
-                    <Badge variant="outline">Excellent</Badge>
-                  </div>
-                </div>
-              </Card>
-            </div>
           </div>
         </main>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingContent} onOpenChange={() => setEditingContent(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier le contenu</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations de votre contenu
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Titre</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Contenu</Label>
+              <Textarea
+                id="edit-content"
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                rows={8}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingContent(null)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer ce contenu ?</DialogTitle>
+            <DialogDescription>
+              Cette action est irréversible. Le contenu sera définitivement supprimé.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,31 +6,91 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { user, loading, signIn, signUp } = useAuth();
+  const { toast } = useToast();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Login form
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  
+  // Signup form
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulation - à connecter avec Lovable Cloud
-    setTimeout(() => {
-      setIsLoading(false);
+  useEffect(() => {
+    if (!loading && user) {
       navigate("/dashboard");
-    }, 1000);
+    }
+  }, [user, loading, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail || !loginPassword) return;
+    
+    setIsLoading(true);
+    const { error } = await signIn(loginEmail, loginPassword);
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Erreur de connexion",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou mot de passe incorrect"
+          : error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signupEmail || !signupPassword) return;
+    
+    if (signupPassword.length < 6) {
+      toast({
+        title: "Mot de passe trop court",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
-    // Simulation - à connecter avec Lovable Cloud
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/dashboard");
-    }, 1000);
+    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Erreur d'inscription",
+        description: error.message === "User already registered"
+          ? "Un compte existe déjà avec cet email"
+          : error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Compte créé !",
+        description: "Bienvenue sur Tipote™",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Chargement...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -70,6 +130,8 @@ const Login = () => {
                         type="email"
                         placeholder="vous@exemple.com"
                         className="pl-10"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
                         required
                       />
                     </div>
@@ -83,6 +145,8 @@ const Login = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="pl-10 pr-10"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
                         required
                       />
                       <button
@@ -93,11 +157,6 @@ const Login = () => {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <button type="button" className="text-sm text-primary hover:underline">
-                      Mot de passe oublié ?
-                    </button>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
@@ -123,7 +182,8 @@ const Login = () => {
                         type="text"
                         placeholder="Jean Dupont"
                         className="pl-10"
-                        required
+                        value={signupName}
+                        onChange={(e) => setSignupName(e.target.value)}
                       />
                     </div>
                   </div>
@@ -136,6 +196,8 @@ const Login = () => {
                         type="email"
                         placeholder="vous@exemple.com"
                         className="pl-10"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
                         required
                       />
                     </div>
@@ -149,6 +211,8 @@ const Login = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="pl-10 pr-10"
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
                         required
                       />
                       <button
