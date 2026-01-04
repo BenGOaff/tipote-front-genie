@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useContents, Content } from "@/hooks/useContents";
+import { ContentCalendar } from "@/components/ContentCalendar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -179,7 +180,7 @@ const MyContent = () => {
               </Card>
             </div>
 
-            {/* Content List */}
+            {/* Content Display */}
             {loading ? (
               <Card className="p-8 text-center">
                 <p className="text-muted-foreground">Chargement...</p>
@@ -198,7 +199,12 @@ const MyContent = () => {
                   </Button>
                 </Link>
               </Card>
-            ) : view === "list" ? (
+            ) : view === "calendar" ? (
+              <ContentCalendar 
+                contents={filteredContents} 
+                onSelectContent={(content) => openEdit(content)}
+              />
+            ) : (
               <div className="space-y-6">
                 {Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a)).map(([date, items]) => (
                   <div key={date}>
@@ -257,12 +263,6 @@ const MyContent = () => {
                   </div>
                 ))}
               </div>
-            ) : (
-              <Card className="p-6">
-                <p className="text-center text-muted-foreground">
-                  Vue calendrier bientôt disponible
-                </p>
-              </Card>
             )}
           </div>
         </main>
