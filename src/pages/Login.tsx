@@ -3,41 +3,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, ExternalLink, KeyRound } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { user, loading, signIn, signUp } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<"login" | "forgot" | "set-password">("login");
   
   // Login form
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  
-  // Signup form
-  const [signupName, setSignupName] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Check if user came from magic link (needs to set password)
+  useEffect(() => {
+    const type = searchParams.get("type");
+    if (type === "recovery" || type === "magiclink") {
+      setMode("set-password");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && mode !== "set-password") {
       navigate("/dashboard");
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, mode]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail || !loginPassword) return;
+    if (!email || !password) return;
     
     setIsLoading(true);
-    const { error } = await signIn(loginEmail, loginPassword);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     setIsLoading(false);
     
     if (error) {
@@ -51,11 +60,45 @@ const Login = () => {
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupEmail || !signupPassword) return;
+    if (!email) return;
     
-    if (signupPassword.length < 6) {
+    setIsLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login?type=recovery`,
+    });
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Email envoyé",
+        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
+      });
+      setMode("login");
+    }
+  };
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password || !confirmPassword) return;
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (password.length < 6) {
       toast({
         title: "Mot de passe trop court",
         description: "Le mot de passe doit contenir au moins 6 caractères",
@@ -65,22 +108,23 @@ const Login = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signUp(signupEmail, signupPassword, signupName);
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
     setIsLoading(false);
     
     if (error) {
       toast({
-        title: "Erreur d'inscription",
-        description: error.message === "User already registered"
-          ? "Un compte existe déjà avec cet email"
-          : error.message,
+        title: "Erreur",
+        description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Compte créé !",
-        description: "Bienvenue sur Tipote™",
+        title: "Mot de passe défini !",
+        description: "Vous pouvez maintenant vous connecter",
       });
+      navigate("/dashboard");
     }
   };
 
@@ -107,142 +151,193 @@ const Login = () => {
 
         <Card className="border-border shadow-lg">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl font-bold text-center">Bienvenue</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              {mode === "login" && "Connexion"}
+              {mode === "forgot" && "Mot de passe oublié"}
+              {mode === "set-password" && "Définir votre mot de passe"}
+            </CardTitle>
             <CardDescription className="text-center">
-              Connectez-vous ou créez votre compte
+              {mode === "login" && "Entrez vos identifiants pour accéder à votre compte"}
+              {mode === "forgot" && "Entrez votre email pour recevoir un lien de réinitialisation"}
+              {mode === "set-password" && "Choisissez un mot de passe pour sécuriser votre compte"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Connexion</TabsTrigger>
-                <TabsTrigger value="signup">Inscription</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="vous@exemple.com"
-                        className="pl-10"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
+            {/* Login Form */}
+            {mode === "login" && (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="vous@exemple.com"
+                      className="pl-10"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
                   </div>
-                  <div className="space-y-2">
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
                     <Label htmlFor="password">Mot de passe</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="pl-10 pr-10"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Mot de passe oublié ?
+                    </button>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      "Connexion..."
-                    ) : (
-                      <>
-                        Se connecter
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10 pr-10"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    "Connexion..."
+                  ) : (
+                    <>
+                      Se connecter
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nom complet</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Jean Dupont"
-                        className="pl-10"
-                        value={signupName}
-                        onChange={(e) => setSignupName(e.target.value)}
-                      />
-                    </div>
+            {/* Forgot Password Form */}
+            {mode === "forgot" && (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      placeholder="vous@exemple.com"
+                      className="pl-10"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="vous@exemple.com"
-                        className="pl-10"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        required
-                      />
-                    </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    "Envoi en cours..."
+                  ) : (
+                    <>
+                      Envoyer le lien
+                      <Mail className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setMode("login")}
+                >
+                  Retour à la connexion
+                </Button>
+              </form>
+            )}
+
+            {/* Set Password Form (after magic link) */}
+            {mode === "set-password" && (
+              <form onSubmit={handleSetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="new-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10 pr-10"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Mot de passe</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="pl-10 pr-10"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="confirm-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    En créant un compte, vous acceptez nos{" "}
-                    <a href="#" className="text-primary hover:underline">conditions d'utilisation</a>
-                    {" "}et notre{" "}
-                    <a href="#" className="text-primary hover:underline">politique de confidentialité</a>.
-                  </p>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      "Création..."
-                    ) : (
-                      <>
-                        Créer mon compte
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Minimum 6 caractères
+                </p>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    "Enregistrement..."
+                  ) : (
+                    <>
+                      Définir mon mot de passe
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
+
+            {/* Signup CTA */}
+            {mode === "login" && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-center text-sm text-muted-foreground mb-3">
+                  Pas encore de compte ?
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  asChild
+                >
+                  <a href="https://www.tipote.com/" target="_blank" rel="noopener noreferrer">
+                    Créer un compte sur Tipote.com
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
