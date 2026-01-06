@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
+import Onboarding from "./pages/Onboarding";
 import Today from "./pages/Today";
 import MyStrategy from "./pages/MyStrategy";
 import Create from "./pages/Create";
@@ -25,6 +26,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Today /></ProtectedRoute>} />
             <Route path="/dashboard/strategy" element={<ProtectedRoute><MyStrategy /></ProtectedRoute>} />
             <Route path="/dashboard/create" element={<ProtectedRoute><Create /></ProtectedRoute>} />
