@@ -58,31 +58,82 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age_range: string | null
+          audience_size: string | null
+          business_type: string | null
+          content_preference: string | null
+          country: string | null
           created_at: string
           display_name: string | null
+          financial_goal: string | null
+          first_name: string | null
+          gender: string | null
+          has_offers: boolean | null
           id: string
+          maturity: string | null
           niche: string | null
+          offer_price: string | null
+          offer_sales_count: string | null
+          onboarding_completed: boolean | null
           persona: string | null
+          preferred_tone: string | null
+          psychological_goal: string | null
+          tools_used: string[] | null
           updated_at: string
           user_id: string
+          weekly_time: string | null
         }
         Insert: {
+          age_range?: string | null
+          audience_size?: string | null
+          business_type?: string | null
+          content_preference?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
+          financial_goal?: string | null
+          first_name?: string | null
+          gender?: string | null
+          has_offers?: boolean | null
           id?: string
+          maturity?: string | null
           niche?: string | null
+          offer_price?: string | null
+          offer_sales_count?: string | null
+          onboarding_completed?: boolean | null
           persona?: string | null
+          preferred_tone?: string | null
+          psychological_goal?: string | null
+          tools_used?: string[] | null
           updated_at?: string
           user_id: string
+          weekly_time?: string | null
         }
         Update: {
+          age_range?: string | null
+          audience_size?: string | null
+          business_type?: string | null
+          content_preference?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
+          financial_goal?: string | null
+          first_name?: string | null
+          gender?: string | null
+          has_offers?: boolean | null
           id?: string
+          maturity?: string | null
           niche?: string | null
+          offer_price?: string | null
+          offer_sales_count?: string | null
+          onboarding_completed?: boolean | null
           persona?: string | null
+          preferred_tone?: string | null
+          psychological_goal?: string | null
+          tools_used?: string[] | null
           updated_at?: string
           user_id?: string
+          weekly_time?: string | null
         }
         Relationships: []
       }
