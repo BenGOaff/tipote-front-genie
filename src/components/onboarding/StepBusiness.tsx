@@ -1,13 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Briefcase, ArrowRight, ArrowLeft } from "lucide-react";
-import { OnboardingData } from "./OnboardingFlow";
+import { Briefcase, ArrowRight, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { OnboardingData, Offer, SocialLink } from "./OnboardingFlow";
 
 interface StepBusinessProps {
   data: OnboardingData;
@@ -16,28 +15,6 @@ interface StepBusinessProps {
   onBack: () => void;
 }
 
-const niches = [
-  { value: "argent", label: "💰 Argent & Business" },
-  { value: "sante", label: "🏃 Santé & Bien-être" },
-  { value: "devperso", label: "🧠 Développement personnel" },
-  { value: "relations", label: "❤️ Relations" },
-];
-
-const businessTypes = [
-  { value: "coaching", label: "Coaching / Consulting" },
-  { value: "formation", label: "Formation en ligne" },
-  { value: "freelance", label: "Freelance / Prestataire" },
-  { value: "ecommerce", label: "E-commerce" },
-  { value: "saas", label: "SaaS / App" },
-  { value: "autre", label: "Autre" },
-];
-
-const maturities = [
-  { value: "0-500", label: "0 - 500€/mois" },
-  { value: "500-5000", label: "500€ - 5k€/mois" },
-  { value: "5000+", label: "5k€+/mois" },
-];
-
 const audienceSizes = [
   { value: "0-500", label: "0 - 500" },
   { value: "500-2000", label: "500 - 2 000" },
@@ -45,34 +22,73 @@ const audienceSizes = [
   { value: "10000+", label: "10 000+" },
 ];
 
-const toolsList = [
-  "Systeme.io",
-  "Mailchimp",
-  "ConvertKit",
-  "Canva",
-  "Notion",
-  "Calendly",
-  "Stripe",
-  "WordPress",
-  "Autre",
+const socialPlatforms = [
+  "Facebook", "LinkedIn", "X", "Instagram", "Snapchat", "Threads", "TikTok"
 ];
 
-const weeklyTimes = [
-  { value: "1-5h", label: "1-5 heures" },
-  { value: "5-10h", label: "5-10 heures" },
-  { value: "10-20h", label: "10-20 heures" },
-  { value: "20h+", label: "20+ heures" },
+const weeklyHoursOptions = [
+  { value: "moins_5h", label: "< 5h" },
+  { value: "5_10h", label: "5 - 10h" },
+  { value: "10_20h", label: "10 - 20h" },
+  { value: "plus_20h", label: "> 20h" },
+];
+
+const goal90DaysOptions = [
+  { value: "creer_offre", label: "Créer ma première offre" },
+  { value: "construire_audience", label: "Construire mon audience" },
+  { value: "premieres_ventes", label: "Faire mes premières ventes" },
+  { value: "augmenter_ca", label: "Augmenter mon CA" },
+  { value: "automatiser", label: "Automatiser" },
+];
+
+const mainGoalsOptions = [
+  { value: "devenir_riche", label: "💰 Devenir riche" },
+  { value: "fier", label: "⭐ Être fier de mes activités" },
+  { value: "aider", label: "🤝 Aider les autres" },
+  { value: "temps_libre", label: "⏰ Avoir plus de temps libre" },
 ];
 
 export const StepBusiness = ({ data, updateData, onNext, onBack }: StepBusinessProps) => {
-  const isValid = data.niche && data.persona && data.businessType && data.maturity && data.weeklyTime;
+  const isValid = data.socialAudience && data.weeklyHours && data.mainGoal90Days && data.mainGoals.length > 0;
 
-  const toggleTool = (tool: string) => {
-    const current = data.toolsUsed || [];
-    if (current.includes(tool)) {
-      updateData({ toolsUsed: current.filter((t) => t !== tool) });
-    } else {
-      updateData({ toolsUsed: [...current, tool] });
+  const addOffer = () => {
+    const newOffer: Offer = { name: "", type: "", price: "", salesCount: "", link: "" };
+    updateData({ offers: [...data.offers, newOffer] });
+  };
+
+  const updateOffer = (index: number, field: keyof Offer, value: string) => {
+    const newOffers = [...data.offers];
+    newOffers[index] = { ...newOffers[index], [field]: value };
+    updateData({ offers: newOffers });
+  };
+
+  const removeOffer = (index: number) => {
+    updateData({ offers: data.offers.filter((_, i) => i !== index) });
+  };
+
+  const toggleSocialPlatform = (platform: string) => {
+    const existing = data.socialLinks.find(l => l.platform === platform);
+    if (existing) {
+      updateData({ socialLinks: data.socialLinks.filter(l => l.platform !== platform) });
+    } else if (data.socialLinks.length < 2) {
+      updateData({ socialLinks: [...data.socialLinks, { platform, url: "" }] });
+    }
+  };
+
+  const updateSocialLink = (platform: string, url: string) => {
+    updateData({
+      socialLinks: data.socialLinks.map(l => 
+        l.platform === platform ? { ...l, url } : l
+      )
+    });
+  };
+
+  const toggleMainGoal = (goal: string) => {
+    const current = data.mainGoals || [];
+    if (current.includes(goal)) {
+      updateData({ mainGoals: current.filter(g => g !== goal) });
+    } else if (current.length < 2) {
+      updateData({ mainGoals: [...current, goal] });
     }
   };
 
@@ -82,89 +98,82 @@ export const StepBusiness = ({ data, updateData, onNext, onBack }: StepBusinessP
         <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4">
           <Briefcase className="w-8 h-8 text-primary-foreground" />
         </div>
-        <h1 className="text-2xl font-display font-bold mb-2">Votre business</h1>
+        <h1 className="text-2xl font-display font-bold mb-2">Ta situation actuelle</h1>
         <p className="text-muted-foreground">
-          Ces informations permettent à l'IA de personnaliser vos contenus
+          Ces informations permettent à l'IA de mieux te conseiller
         </p>
       </div>
 
       <Card className="p-6 space-y-6">
+        {/* Offres existantes */}
         <div className="space-y-3">
-          <Label>Niche principale *</Label>
-          <RadioGroup
-            value={data.niche}
-            onValueChange={(value) => updateData({ niche: value })}
-            className="grid grid-cols-2 gap-2"
-          >
-            {niches.map((niche) => (
-              <div key={niche.value} className="flex items-center">
-                <RadioGroupItem value={niche.value} id={niche.value} className="peer sr-only" />
-                <Label
-                  htmlFor={niche.value}
-                  className="flex-1 cursor-pointer rounded-lg border-2 border-muted bg-background p-3 text-center text-sm font-medium transition-all hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                >
-                  {niche.label}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="persona">
-            Qui voulez-vous aider, à faire quoi, et comment ? *
-          </Label>
-          <Textarea
-            id="persona"
-            placeholder="Ex: J'aide les entrepreneurs à automatiser leur marketing grâce à l'IA..."
-            value={data.persona}
-            onChange={(e) => updateData({ persona: e.target.value })}
-            rows={3}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Type de business *</Label>
-          <Select value={data.businessType} onValueChange={(value) => updateData({ businessType: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez votre type" />
-            </SelectTrigger>
-            <SelectContent>
-              {businessTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="hasOffers"
+              checked={data.hasOffers}
+              onCheckedChange={(checked) => {
+                updateData({ hasOffers: !!checked, offers: checked ? data.offers : [] });
+              }}
+            />
+            <Label htmlFor="hasOffers">As-tu déjà des offres à vendre ?</Label>
+          </div>
+          
+          {data.hasOffers && (
+            <div className="ml-6 space-y-4">
+              <p className="text-sm text-muted-foreground">Liste tes offres :</p>
+              {data.offers.map((offer, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-3 relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={() => removeOffer(index)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      placeholder="Nom de l'offre"
+                      value={offer.name}
+                      onChange={(e) => updateOffer(index, "name", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Type (coaching, formation...)"
+                      value={offer.type}
+                      onChange={(e) => updateOffer(index, "type", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Prix (ex: 497€)"
+                      value={offer.price}
+                      onChange={(e) => updateOffer(index, "price", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Nb ventes"
+                      value={offer.salesCount}
+                      onChange={(e) => updateOffer(index, "salesCount", e.target.value)}
+                    />
+                  </div>
+                  <Input
+                    placeholder="Lien vers l'offre (optionnel)"
+                    value={offer.link}
+                    onChange={(e) => updateOffer(index, "link", e.target.value)}
+                  />
+                </div>
               ))}
-            </SelectContent>
-          </Select>
+              <Button variant="outline" size="sm" onClick={addOffer}>
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter une offre
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-3">
-          <Label>Chiffre d'affaires actuel *</Label>
-          <RadioGroup
-            value={data.maturity}
-            onValueChange={(value) => updateData({ maturity: value })}
-            className="grid grid-cols-3 gap-2"
-          >
-            {maturities.map((m) => (
-              <div key={m.value} className="flex items-center">
-                <RadioGroupItem value={m.value} id={`mat-${m.value}`} className="peer sr-only" />
-                <Label
-                  htmlFor={`mat-${m.value}`}
-                  className="flex-1 cursor-pointer rounded-lg border-2 border-muted bg-background p-3 text-center text-sm font-medium transition-all hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                >
-                  {m.label}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
-
+        {/* Taille audience réseaux */}
         <div className="space-y-2">
-          <Label>Taille de votre audience (réseaux + emails)</Label>
-          <Select value={data.audienceSize} onValueChange={(value) => updateData({ audienceSize: value })}>
+          <Label>Taille de ton audience réseaux (environ) *</Label>
+          <Select value={data.socialAudience} onValueChange={(value) => updateData({ socialAudience: value })}>
             <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez une fourchette" />
+              <SelectValue placeholder="Sélectionne une fourchette" />
             </SelectTrigger>
             <SelectContent>
               {audienceSizes.map((size) => (
@@ -176,67 +185,61 @@ export const StepBusiness = ({ data, updateData, onNext, onBack }: StepBusinessP
           </Select>
         </div>
 
+        {/* Réseaux sociaux (2 max) */}
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Checkbox
-              id="hasOffers"
-              checked={data.hasOffers}
-              onCheckedChange={(checked) => updateData({ hasOffers: !!checked })}
-            />
-            <Label htmlFor="hasOffers">J'ai déjà des offres payantes</Label>
+          <Label>Les principaux réseaux que tu utilises (2 max)</Label>
+          <div className="flex flex-wrap gap-2">
+            {socialPlatforms.map((platform) => {
+              const isSelected = data.socialLinks.some(l => l.platform === platform);
+              return (
+                <div
+                  key={platform}
+                  onClick={() => toggleSocialPlatform(platform)}
+                  className={`px-3 py-1.5 rounded-full border cursor-pointer text-sm transition-all ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background border-border hover:bg-muted"
+                  } ${!isSelected && data.socialLinks.length >= 2 ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {platform}
+                </div>
+              );
+            })}
           </div>
-          
-          {data.hasOffers && (
-            <div className="grid grid-cols-2 gap-3 ml-6">
-              <div className="space-y-2">
-                <Label htmlFor="offerPrice">Prix moyen</Label>
+          {data.socialLinks.length > 0 && (
+            <div className="space-y-2 mt-3">
+              {data.socialLinks.map((link) => (
                 <Input
-                  id="offerPrice"
-                  placeholder="Ex: 497€"
-                  value={data.offerPrice}
-                  onChange={(e) => updateData({ offerPrice: e.target.value })}
+                  key={link.platform}
+                  placeholder={`Lien de ton profil ${link.platform}`}
+                  value={link.url}
+                  onChange={(e) => updateSocialLink(link.platform, e.target.value)}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="offerSales">Nombre de ventes</Label>
-                <Input
-                  id="offerSales"
-                  placeholder="Ex: 50"
-                  value={data.offerSalesCount}
-                  onChange={(e) => updateData({ offerSalesCount: e.target.value })}
-                />
-              </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="space-y-3">
-          <Label>Outils utilisés</Label>
-          <div className="flex flex-wrap gap-2">
-            {toolsList.map((tool) => (
-              <div
-                key={tool}
-                onClick={() => toggleTool(tool)}
-                className={`px-3 py-1.5 rounded-full border cursor-pointer text-sm transition-all ${
-                  data.toolsUsed.includes(tool)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background border-border hover:bg-muted"
-                }`}
-              >
-                {tool}
-              </div>
-            ))}
-          </div>
+        {/* Taille liste email */}
+        <div className="space-y-2">
+          <Label htmlFor="emailListSize">Nombre d'emails dans ta liste (environ)</Label>
+          <Input
+            id="emailListSize"
+            placeholder="Ex: 500"
+            value={data.emailListSize}
+            onChange={(e) => updateData({ emailListSize: e.target.value })}
+          />
         </div>
 
+        {/* Temps disponible */}
         <div className="space-y-3">
-          <Label>Temps disponible par semaine *</Label>
+          <Label>Temps disponible par semaine pour ton business *</Label>
           <RadioGroup
-            value={data.weeklyTime}
-            onValueChange={(value) => updateData({ weeklyTime: value })}
+            value={data.weeklyHours}
+            onValueChange={(value) => updateData({ weeklyHours: value })}
             className="grid grid-cols-2 sm:grid-cols-4 gap-2"
           >
-            {weeklyTimes.map((t) => (
+            {weeklyHoursOptions.map((t) => (
               <div key={t.value} className="flex items-center">
                 <RadioGroupItem value={t.value} id={`time-${t.value}`} className="peer sr-only" />
                 <Label
@@ -248,6 +251,51 @@ export const StepBusiness = ({ data, updateData, onNext, onBack }: StepBusinessP
               </div>
             ))}
           </RadioGroup>
+        </div>
+
+        {/* Objectif 90 jours */}
+        <div className="space-y-3">
+          <Label>Ton objectif prioritaire pour les 90 prochains jours *</Label>
+          <RadioGroup
+            value={data.mainGoal90Days}
+            onValueChange={(value) => updateData({ mainGoal90Days: value })}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+          >
+            {goal90DaysOptions.map((goal) => (
+              <div key={goal.value} className="flex items-center">
+                <RadioGroupItem value={goal.value} id={`goal90-${goal.value}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`goal90-${goal.value}`}
+                  className="flex-1 cursor-pointer rounded-lg border-2 border-muted bg-background p-3 text-center text-sm font-medium transition-all hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                >
+                  {goal.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+
+        {/* Objectifs principaux (2 max) */}
+        <div className="space-y-3">
+          <Label>Ton objectif principal avec ton business, au-delà de l'argent (2 choix max) *</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {mainGoalsOptions.map((goal) => {
+              const isSelected = data.mainGoals.includes(goal.value);
+              return (
+                <div
+                  key={goal.value}
+                  onClick={() => toggleMainGoal(goal.value)}
+                  className={`p-3 rounded-lg border-2 cursor-pointer text-center text-sm font-medium transition-all ${
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-muted bg-background hover:bg-muted/50"
+                  } ${!isSelected && data.mainGoals.length >= 2 ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {goal.label}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </Card>
 
