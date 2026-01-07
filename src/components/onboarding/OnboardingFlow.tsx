@@ -9,49 +9,68 @@ import { StepGoals } from "./StepGoals";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles } from "lucide-react";
 
+export interface Offer {
+  name: string;
+  type: string;
+  price: string;
+  salesCount: string;
+  link: string;
+}
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
 export interface OnboardingData {
-  // Écran 1 - Profil personnel
+  // Écran 1 - Toi & ton business
   firstName: string;
-  ageRange: string;
-  gender: string;
   country: string;
-  // Écran 2 - Business
   niche: string;
-  persona: string;
-  businessType: string;
+  missionStatement: string;
   maturity: string;
-  audienceSize: string;
+  biggestBlocker: string;
+  // Écran 2 - Ta situation actuelle
   hasOffers: boolean;
-  offerPrice: string;
-  offerSalesCount: string;
-  toolsUsed: string[];
-  weeklyTime: string;
-  // Écran 3 - Objectifs
-  financialGoal: string;
-  psychologicalGoal: string;
-  contentPreference: string;
-  preferredTone: string;
+  offers: Offer[];
+  socialAudience: string;
+  socialLinks: SocialLink[];
+  emailListSize: string;
+  weeklyHours: string;
+  mainGoal90Days: string;
+  mainGoals: string[];
+  // Écran 3 - Ce qui te rend unique
+  uniqueValue: string;
+  untappedStrength: string;
+  biggestChallenge: string;
+  successDefinition: string;
+  clientFeedback: string;
+  communicationStyle: string;
+  preferredTones: string[];
 }
 
 const initialData: OnboardingData = {
   firstName: "",
-  ageRange: "",
-  gender: "",
   country: "",
   niche: "",
-  persona: "",
-  businessType: "",
+  missionStatement: "",
   maturity: "",
-  audienceSize: "",
+  biggestBlocker: "",
   hasOffers: false,
-  offerPrice: "",
-  offerSalesCount: "",
-  toolsUsed: [],
-  weeklyTime: "",
-  financialGoal: "",
-  psychologicalGoal: "",
-  contentPreference: "",
-  preferredTone: "",
+  offers: [],
+  socialAudience: "",
+  socialLinks: [],
+  emailListSize: "",
+  weeklyHours: "",
+  mainGoal90Days: "",
+  mainGoals: [],
+  uniqueValue: "",
+  untappedStrength: "",
+  biggestChallenge: "",
+  successDefinition: "",
+  clientFeedback: "",
+  communicationStyle: "",
+  preferredTones: [],
 };
 
 export const OnboardingFlow = () => {
@@ -91,23 +110,26 @@ export const OnboardingFlow = () => {
         .update({
           display_name: data.firstName,
           first_name: data.firstName,
-          age_range: data.ageRange,
-          gender: data.gender,
           country: data.country,
           niche: data.niche,
-          persona: data.persona,
-          business_type: data.businessType,
+          mission_statement: data.missionStatement,
           maturity: data.maturity,
-          audience_size: data.audienceSize,
+          biggest_blocker: data.biggestBlocker,
           has_offers: data.hasOffers,
-          offer_price: data.offerPrice,
-          offer_sales_count: data.offerSalesCount,
-          tools_used: data.toolsUsed,
-          weekly_time: data.weeklyTime,
-          financial_goal: data.financialGoal,
-          psychological_goal: data.psychologicalGoal,
-          content_preference: data.contentPreference,
-          preferred_tone: data.preferredTone,
+          offers: JSON.parse(JSON.stringify(data.offers)),
+          social_audience: data.socialAudience,
+          social_links: JSON.parse(JSON.stringify(data.socialLinks)),
+          email_list_size: data.emailListSize,
+          weekly_hours: data.weeklyHours,
+          main_goal_90_days: data.mainGoal90Days,
+          main_goals: data.mainGoals,
+          unique_value: data.uniqueValue,
+          untapped_strength: data.untappedStrength,
+          biggest_challenge: data.biggestChallenge,
+          success_definition: data.successDefinition,
+          client_feedback: data.clientFeedback,
+          communication_style: data.communicationStyle,
+          preferred_tones: data.preferredTones,
           onboarding_completed: true,
         })
         .eq("user_id", user.id);

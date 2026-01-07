@@ -60,79 +60,127 @@ export type Database = {
         Row: {
           age_range: string | null
           audience_size: string | null
+          biggest_blocker: string | null
+          biggest_challenge: string | null
           business_type: string | null
+          client_feedback: string | null
+          communication_style: string | null
           content_preference: string | null
           country: string | null
           created_at: string
           display_name: string | null
+          email_list_size: string | null
           financial_goal: string | null
           first_name: string | null
           gender: string | null
           has_offers: boolean | null
           id: string
+          main_goal_90_days: string | null
+          main_goals: string[] | null
           maturity: string | null
+          mission_statement: string | null
           niche: string | null
           offer_price: string | null
           offer_sales_count: string | null
+          offers: Json | null
           onboarding_completed: boolean | null
           persona: string | null
           preferred_tone: string | null
+          preferred_tones: string[] | null
           psychological_goal: string | null
+          social_audience: string | null
+          social_links: Json | null
+          success_definition: string | null
           tools_used: string[] | null
+          unique_value: string | null
+          untapped_strength: string | null
           updated_at: string
           user_id: string
+          weekly_hours: string | null
           weekly_time: string | null
         }
         Insert: {
           age_range?: string | null
           audience_size?: string | null
+          biggest_blocker?: string | null
+          biggest_challenge?: string | null
           business_type?: string | null
+          client_feedback?: string | null
+          communication_style?: string | null
           content_preference?: string | null
           country?: string | null
           created_at?: string
           display_name?: string | null
+          email_list_size?: string | null
           financial_goal?: string | null
           first_name?: string | null
           gender?: string | null
           has_offers?: boolean | null
           id?: string
+          main_goal_90_days?: string | null
+          main_goals?: string[] | null
           maturity?: string | null
+          mission_statement?: string | null
           niche?: string | null
           offer_price?: string | null
           offer_sales_count?: string | null
+          offers?: Json | null
           onboarding_completed?: boolean | null
           persona?: string | null
           preferred_tone?: string | null
+          preferred_tones?: string[] | null
           psychological_goal?: string | null
+          social_audience?: string | null
+          social_links?: Json | null
+          success_definition?: string | null
           tools_used?: string[] | null
+          unique_value?: string | null
+          untapped_strength?: string | null
           updated_at?: string
           user_id: string
+          weekly_hours?: string | null
           weekly_time?: string | null
         }
         Update: {
           age_range?: string | null
           audience_size?: string | null
+          biggest_blocker?: string | null
+          biggest_challenge?: string | null
           business_type?: string | null
+          client_feedback?: string | null
+          communication_style?: string | null
           content_preference?: string | null
           country?: string | null
           created_at?: string
           display_name?: string | null
+          email_list_size?: string | null
           financial_goal?: string | null
           first_name?: string | null
           gender?: string | null
           has_offers?: boolean | null
           id?: string
+          main_goal_90_days?: string | null
+          main_goals?: string[] | null
           maturity?: string | null
+          mission_statement?: string | null
           niche?: string | null
           offer_price?: string | null
           offer_sales_count?: string | null
+          offers?: Json | null
           onboarding_completed?: boolean | null
           persona?: string | null
           preferred_tone?: string | null
+          preferred_tones?: string[] | null
           psychological_goal?: string | null
+          social_audience?: string | null
+          social_links?: Json | null
+          success_definition?: string | null
           tools_used?: string[] | null
+          unique_value?: string | null
+          untapped_strength?: string | null
           updated_at?: string
           user_id?: string
+          weekly_hours?: string | null
           weekly_time?: string | null
         }
         Relationships: []
