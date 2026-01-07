@@ -16,6 +16,7 @@ interface StepGoalsProps {
 }
 
 const challengeOptions = [
+  { value: "pas_communaute", label: "Pas de communauté" },
   { value: "pas_offre_claire", label: "Pas d'offre claire" },
   { value: "pas_assez_trafic", label: "Pas assez de trafic" },
   { value: "pas_idee_business", label: "Pas d'idée de business" },
