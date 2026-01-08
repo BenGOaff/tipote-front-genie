@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+import { PyramidSelection } from "@/components/onboarding/PyramidSelection";
 import { Loader2 } from "lucide-react";
+
+type OnboardingStep = "loading" | "onboarding" | "pyramid" | "done";
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [step, setStep] = useState<OnboardingStep>("loading");
+  const [profileData, setProfileData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -22,7 +26,7 @@ const Onboarding = () => {
       try {
         const { data: profile, error } = await supabase
           .from("profiles")
-          .select("onboarding_completed")
+          .select("*")
           .eq("user_id", user.id)
           .single();
 
@@ -30,23 +34,36 @@ const Onboarding = () => {
           console.error("Erreur vérification profil:", error);
         }
 
-        // Si l'onboarding est déjà complété, rediriger vers le dashboard
-        if (profile?.onboarding_completed) {
+        // Si l'onboarding et la pyramide sont complétés
+        if (profile?.onboarding_completed && profile?.pyramid_selected_at) {
           navigate("/dashboard");
           return;
         }
 
-        setCheckingOnboarding(false);
+        // Si l'onboarding est complété mais pas la pyramide
+        if (profile?.onboarding_completed && !profile?.pyramid_selected_at) {
+          setProfileData(profile);
+          setStep("pyramid");
+          return;
+        }
+
+        // Sinon, montrer l'onboarding
+        setStep("onboarding");
       } catch (error) {
         console.error("Erreur:", error);
-        setCheckingOnboarding(false);
+        setStep("onboarding");
       }
     };
 
     checkOnboardingStatus();
   }, [user, authLoading, navigate]);
 
-  if (authLoading || checkingOnboarding) {
+  const handleOnboardingComplete = (data: Record<string, unknown>) => {
+    setProfileData(data);
+    setStep("pyramid");
+  };
+
+  if (authLoading || step === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -54,7 +71,11 @@ const Onboarding = () => {
     );
   }
 
-  return <OnboardingFlow />;
+  if (step === "pyramid" && profileData) {
+    return <PyramidSelection profileData={profileData} />;
+  }
+
+  return <OnboardingFlow onComplete={handleOnboardingComplete} />;
 };
 
 export default Onboarding;

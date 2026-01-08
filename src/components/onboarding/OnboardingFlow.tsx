@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -73,11 +72,14 @@ const initialData: OnboardingData = {
   preferredTones: [],
 };
 
-export const OnboardingFlow = () => {
+interface OnboardingFlowProps {
+  onComplete?: (data: Record<string, unknown>) => void;
+}
+
+export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -137,11 +139,36 @@ export const OnboardingFlow = () => {
       if (error) throw error;
 
       toast({
-        title: "Bienvenue dans Tipote™ !",
-        description: "Votre profil a été configuré avec succès.",
+        title: "Profil configuré !",
+        description: "Choisissez maintenant votre stratégie.",
       });
 
-      navigate("/dashboard");
+      // Pass data to parent for pyramid selection
+      if (onComplete) {
+        onComplete({
+          firstName: data.firstName,
+          country: data.country,
+          niche: data.niche,
+          missionStatement: data.missionStatement,
+          maturity: data.maturity,
+          biggestBlocker: data.biggestBlocker,
+          hasOffers: data.hasOffers,
+          offers: data.offers,
+          socialAudience: data.socialAudience,
+          socialLinks: data.socialLinks,
+          emailListSize: data.emailListSize,
+          weeklyHours: data.weeklyHours,
+          mainGoal90Days: data.mainGoal90Days,
+          mainGoals: data.mainGoals,
+          uniqueValue: data.uniqueValue,
+          untappedStrength: data.untappedStrength,
+          biggestChallenge: data.biggestChallenge,
+          successDefinition: data.successDefinition,
+          clientFeedback: data.clientFeedback,
+          communicationStyle: data.communicationStyle,
+          preferredTones: data.preferredTones,
+        });
+      }
     } catch (error) {
       console.error("Erreur onboarding:", error);
       toast({
