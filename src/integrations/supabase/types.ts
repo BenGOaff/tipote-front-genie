@@ -88,6 +88,8 @@ export type Database = {
           preferred_tone: string | null
           preferred_tones: string[] | null
           psychological_goal: string | null
+          pyramid_selected_at: string | null
+          selected_pyramid: Json | null
           social_audience: string | null
           social_links: Json | null
           success_definition: string | null
@@ -130,6 +132,8 @@ export type Database = {
           preferred_tone?: string | null
           preferred_tones?: string[] | null
           psychological_goal?: string | null
+          pyramid_selected_at?: string | null
+          selected_pyramid?: Json | null
           social_audience?: string | null
           social_links?: Json | null
           success_definition?: string | null
@@ -172,6 +176,8 @@ export type Database = {
           preferred_tone?: string | null
           preferred_tones?: string[] | null
           psychological_goal?: string | null
+          pyramid_selected_at?: string | null
+          selected_pyramid?: Json | null
           social_audience?: string | null
           social_links?: Json | null
           success_definition?: string | null
@@ -182,6 +188,45 @@ export type Database = {
           user_id?: string
           weekly_hours?: string | null
           weekly_time?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: number | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
