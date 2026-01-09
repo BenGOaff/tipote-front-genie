@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -40,6 +40,8 @@ import { useContents, Content } from "@/hooks/useContents";
 import { ContentCalendar } from "@/components/ContentCalendar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useTutorial } from "@/hooks/useTutorial";
+import { ContextualTooltip } from "@/components/tutorial/ContextualTooltip";
 
 const typeIcons: Record<string, any> = {
   post: MessageSquare,
@@ -67,8 +69,16 @@ const MyContent = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<Content | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const { hasSeenContext, markContextSeen } = useTutorial();
   
   const { contents, loading, updateContent, deleteContent } = useContents();
+
+  // Marquer comme vu à la première visite
+  useEffect(() => {
+    if (!hasSeenContext('first_my_content_visit')) {
+      // Le tooltip sera géré par ContextualTooltip
+    }
+  }, [hasSeenContext]);
 
   const filteredContents = contents.filter(c => 
     c.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,22 +151,30 @@ const MyContent = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button
-                  variant={view === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setView("list")}
+                <ContextualTooltip
+                  contextKey="first_my_content_visit"
+                  message="Bascule entre liste et calendrier selon ta préférence."
+                  position="bottom"
                 >
-                  <List className="w-4 h-4 mr-2" />
-                  Liste
-                </Button>
-                <Button
-                  variant={view === "calendar" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setView("calendar")}
-                >
-                  <CalendarDays className="w-4 h-4 mr-2" />
-                  Calendrier
-                </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={view === "list" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setView("list")}
+                    >
+                      <List className="w-4 h-4 mr-2" />
+                      Liste
+                    </Button>
+                    <Button
+                      variant={view === "calendar" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setView("calendar")}
+                    >
+                      <CalendarDays className="w-4 h-4 mr-2" />
+                      Calendrier
+                    </Button>
+                  </div>
+                </ContextualTooltip>
               </div>
             </div>
 

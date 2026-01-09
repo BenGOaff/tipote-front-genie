@@ -94,6 +94,9 @@ export type Database = {
           social_links: Json | null
           success_definition: string | null
           tools_used: string[] | null
+          tutorial_completed: boolean | null
+          tutorial_context_flags: Json | null
+          tutorial_step: string | null
           unique_value: string | null
           untapped_strength: string | null
           updated_at: string
@@ -138,6 +141,9 @@ export type Database = {
           social_links?: Json | null
           success_definition?: string | null
           tools_used?: string[] | null
+          tutorial_completed?: boolean | null
+          tutorial_context_flags?: Json | null
+          tutorial_step?: string | null
           unique_value?: string | null
           untapped_strength?: string | null
           updated_at?: string
@@ -182,6 +188,9 @@ export type Database = {
           social_links?: Json | null
           success_definition?: string | null
           tools_used?: string[] | null
+          tutorial_completed?: boolean | null
+          tutorial_context_flags?: Json | null
+          tutorial_step?: string | null
           unique_value?: string | null
           untapped_strength?: string | null
           updated_at?: string

@@ -27,9 +27,10 @@ interface Pyramid {
 
 interface PyramidSelectionProps {
   profileData: Record<string, unknown>;
+  onComplete?: () => void;
 }
 
-export const PyramidSelection = ({ profileData }: PyramidSelectionProps) => {
+export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionProps) => {
   const [pyramids, setPyramids] = useState<Pyramid[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPyramid, setSelectedPyramid] = useState<string | null>(null);
@@ -149,7 +150,11 @@ export const PyramidSelection = ({ profileData }: PyramidSelectionProps) => {
         description: "Vos tâches ont été générées. Bienvenue dans Tipote™ !",
       });
 
-      navigate("/dashboard");
+      if (onComplete) {
+        onComplete();
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Error saving pyramid:", error);
       toast({

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useTutorial } from "@/hooks/useTutorial";
+import { ContextualTooltip } from "@/components/tutorial/ContextualTooltip";
 import { 
   Sparkles, 
   FileText, 
@@ -127,10 +129,19 @@ const Create = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { createContent } = useContents();
+  const { hasSeenContext, markContextSeen } = useTutorial();
   
   const [selectedType, setSelectedType] = useState<ContentType>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showFirstCreateTooltip, setShowFirstCreateTooltip] = useState(false);
+
+  useEffect(() => {
+    // Phase 4.1 - Premier clic sur Créer
+    if (!hasSeenContext('first_create_click')) {
+      setShowFirstCreateTooltip(true);
+    }
+  }, [hasSeenContext]);
 
   const handleGenerate = async (params: any): Promise<string> => {
     setIsGenerating(true);
@@ -247,15 +258,26 @@ const Create = () => {
                 {/* 6 Content Types Grid */}
                 <section>
                   <h3 className="text-lg font-bold mb-4">Types de contenu</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {contentTypes.map((type) => (
-                      <ContentTypeCard
-                        key={type.id}
-                        {...type}
-                        onClick={() => setSelectedType(type.id as ContentType)}
-                      />
-                    ))}
-                  </div>
+                  <ContextualTooltip
+                    contextKey="first_create_click"
+                    message="Choisis le type de contenu que tu veux créer. L'IA utilise ton profil pour personnaliser."
+                    position="top"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {contentTypes.map((type) => (
+                        <ContentTypeCard
+                          key={type.id}
+                          {...type}
+                          onClick={() => {
+                            setSelectedType(type.id as ContentType);
+                            if (!hasSeenContext('first_create_click')) {
+                              markContextSeen('first_create_click');
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </ContextualTooltip>
                 </section>
 
                 {/* Quick Templates */}
