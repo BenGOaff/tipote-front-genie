@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTutorial } from "@/hooks/useTutorial";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { PyramidSelection } from "@/components/onboarding/PyramidSelection";
@@ -10,6 +11,7 @@ type OnboardingStep = "loading" | "onboarding" | "pyramid" | "done";
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
+  const { setPhase, setShowWelcome } = useTutorial();
   const navigate = useNavigate();
   const [step, setStep] = useState<OnboardingStep>("loading");
   const [profileData, setProfileData] = useState<Record<string, unknown> | null>(null);
@@ -63,6 +65,13 @@ const Onboarding = () => {
     setStep("pyramid");
   };
 
+  const handlePyramidComplete = () => {
+    // Après la sélection de pyramide, démarrer Phase 2 du tutoriel
+    setShowWelcome(false);
+    setPhase('api_settings');
+    navigate("/dashboard/settings");
+  };
+
   if (authLoading || step === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -72,7 +81,7 @@ const Onboarding = () => {
   }
 
   if (step === "pyramid" && profileData) {
-    return <PyramidSelection profileData={profileData} />;
+    return <PyramidSelection profileData={profileData} onComplete={handlePyramidComplete} />;
   }
 
   return <OnboardingFlow onComplete={handleOnboardingComplete} />;

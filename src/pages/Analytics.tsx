@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -5,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Users, Mail, MousePointer, Eye, ArrowUpRight } from "lucide-react";
+import { useTutorial } from "@/hooks/useTutorial";
+import { ContextualTooltip } from "@/components/tutorial/ContextualTooltip";
 
 const Analytics = () => {
+  const { hasSeenContext, markContextSeen } = useTutorial();
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -229,22 +233,28 @@ const Analytics = () => {
             </Card>
 
             {/* Update Reminder */}
-            <Card className="p-6 gradient-hero border-border/50">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-primary-foreground mb-2">
-                    Mettre à jour vos données
-                  </h3>
-                  <p className="text-primary-foreground/90 mb-4">
-                    N'oubliez pas de mettre à jour vos métriques chaque semaine pour que l'IA puisse 
-                    analyser vos résultats et adapter votre stratégie
-                  </p>
-                  <Button variant="secondary">
-                    Mettre à jour maintenant
-                  </Button>
+            <ContextualTooltip
+              contextKey="first_analytics_visit"
+              message="Mets à jour tes métriques chaque semaine pour des recommandations plus précises."
+              position="top"
+            >
+              <Card className="p-6 gradient-hero border-border/50">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-primary-foreground mb-2">
+                      Mettre à jour vos données
+                    </h3>
+                    <p className="text-primary-foreground/90 mb-4">
+                      N'oubliez pas de mettre à jour vos métriques chaque semaine pour que l'IA puisse 
+                      analyser vos résultats et adapter votre stratégie
+                    </p>
+                    <Button variant="secondary">
+                      Mettre à jour maintenant
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </ContextualTooltip>
           </div>
         </main>
       </div>
