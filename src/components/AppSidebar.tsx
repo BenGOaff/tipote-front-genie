@@ -33,9 +33,7 @@ export function AppSidebar() {
 
   const handleItemClick = (spotlightId: string | null) => {
     // Si on clique sur l'élément qui est actuellement en spotlight, passer au suivant
-    if (spotlightId === 'settings' && phase === 'api_settings') {
-      nextPhase();
-    } else if (spotlightId === 'today' && phase === 'tour_today') {
+    if (spotlightId === 'today' && phase === 'tour_today') {
       nextPhase();
     } else if (spotlightId === 'create' && phase === 'tour_create') {
       nextPhase();

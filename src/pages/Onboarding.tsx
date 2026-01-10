@@ -66,10 +66,10 @@ const Onboarding = () => {
   };
 
   const handlePyramidComplete = () => {
-    // Après la sélection de pyramide, démarrer Phase 2 du tutoriel
+    // Après la sélection de pyramide, démarrer le tour guidé (Phase 3)
     setShowWelcome(false);
-    setPhase('api_settings');
-    navigate("/dashboard/settings");
+    setPhase('tour_today');
+    navigate("/dashboard");
   };
 
   if (authLoading || step === "loading") {
