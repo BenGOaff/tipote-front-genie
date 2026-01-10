@@ -39,10 +39,6 @@ const TutorialContext = createContext<TutorialContextType | undefined>(undefined
 
 const PHASE_ORDER: TutorialPhase[] = [
   'welcome',
-  'api_settings',
-  'api_tab',
-  'api_fields',
-  'api_validated',
   'tour_today',
   'tour_create',
   'tour_strategy',
@@ -168,11 +164,9 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   }, [contextFlags]);
 
   const shouldHighlight = useCallback((element: string) => {
-    if (tutorialCompleted || phase === 'completed') return false;
+    if (tutorialCompleted || phase === 'completed' || phase === 'welcome') return false;
     
     switch (phase) {
-      case 'api_settings':
-        return element === 'settings';
       case 'tour_today':
         return element === 'today';
       case 'tour_create':
@@ -185,25 +179,17 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   }, [phase, tutorialCompleted]);
 
   const currentTooltip = (() => {
-    if (tutorialCompleted || phase === 'completed') return null;
+    if (tutorialCompleted || phase === 'completed' || phase === 'welcome') return null;
     
     switch (phase) {
-      case 'api_settings':
-        return 'Pour générer du contenu, connecte d\'abord ton IA ici.';
-      case 'api_tab':
-        return 'C\'est ici que tu configures ta clé.';
-      case 'api_fields':
-        return 'Choisis ton IA (OpenAI, Claude ou Gemini) et colle ta clé.\n💡 Coût moyen : 2-5€/mois';
-      case 'api_validated':
-        return 'Parfait ! Ton IA est connectée. Tu peux maintenant générer du contenu.';
       case 'tour_today':
-        return 'Ta page d\'accueil. Tu y trouveras toujours ta prochaine action prioritaire.';
+        return 'Ta page d\'accueil. Tu y trouveras toujours ta prochaine action prioritaire. 🏠';
       case 'tour_create':
-        return 'Le cœur de Tipote : génère posts, emails, articles... en quelques clics.';
+        return 'Le cœur de Tipote : génère posts, emails, articles... en quelques clics. ✨';
       case 'tour_strategy':
-        return 'Ton plan personnalisé et ta pyramide d\'offres. Tout s\'adapte à toi.';
+        return 'Ton plan personnalisé et ta pyramide d\'offres. Tout s\'adapte à toi. 🎯';
       case 'tour_complete':
-        return 'C\'est bon ! Tu peux explorer. Je suis là si tu as besoin.';
+        return 'C\'est bon ! Tu peux explorer. Je suis là si tu as besoin. 🚀';
       default:
         return null;
     }

@@ -10,6 +10,7 @@ export function WelcomeModal() {
   const { showWelcome, setShowWelcome, setPhase, skipTutorial } = useTutorial();
   const { user } = useAuth();
   const [firstName, setFirstName] = useState<string>("");
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -17,22 +18,27 @@ export function WelcomeModal() {
       
       const { data } = await supabase
         .from('profiles')
-        .select('first_name')
+        .select('first_name, onboarding_completed')
         .eq('user_id', user.id)
         .single();
       
       if (data?.first_name) {
         setFirstName(data.first_name);
       }
+      setOnboardingCompleted(data?.onboarding_completed || false);
     };
     
     loadProfile();
   }, [user]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setShowWelcome(false);
-    // L'onboarding business démarre (celui qui existe déjà)
-    // Après l'onboarding, le tutoriel continue en Phase 2
+    
+    // Si l'onboarding est déjà terminé, passer directement au tour guidé
+    if (onboardingCompleted) {
+      setPhase('tour_today');
+    }
+    // Sinon, l'utilisateur fera l'onboarding et le tour commencera après
   };
 
   const handleSkip = () => {
@@ -57,21 +63,40 @@ export function WelcomeModal() {
           
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-6 text-left">
             <p className="text-primary-foreground/90 mb-3 font-medium">
-              Dans les 5 prochaines minutes :
+              {onboardingCompleted ? "Je vais te faire visiter :" : "Dans les 5 prochaines minutes :"}
             </p>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">1</span>
-                Tu me présentes ton business (3 questions rapides)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">2</span>
-                Je génère ton plan stratégique personnalisé
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">3</span>
-                Tu connectes ton IA préférée
-              </li>
+              {onboardingCompleted ? (
+                <>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">1</span>
+                    La page Aujourd'hui — ton tableau de bord
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">2</span>
+                    Créer — génère du contenu en quelques clics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">3</span>
+                    Ma Stratégie — ton plan personnalisé
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">1</span>
+                    Tu me présentes ton business (3 questions rapides)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">2</span>
+                    Je génère ton plan stratégique personnalisé
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">3</span>
+                    Je te fais visiter l'app
+                  </li>
+                </>
+              )}
             </ul>
           </div>
           
