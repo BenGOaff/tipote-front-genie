@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -8,9 +8,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Users, Mail, MousePointer, Eye, ArrowUpRight } from "lucide-react";
 import { useTutorial } from "@/hooks/useTutorial";
 import { ContextualTooltip } from "@/components/tutorial/ContextualTooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const Analytics = () => {
   const { hasSeenContext, markContextSeen } = useTutorial();
+  const { toast } = useToast();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [metricsForm, setMetricsForm] = useState({
+    emailOpenRate: "",
+    conversionRate: "",
+    newSubscribers: "",
+    pageViews: "",
+  });
+
+  const handleMetricsUpdate = () => {
+    // Ici on pourrait sauvegarder vers Supabase
+    toast({
+      title: "Métriques mises à jour !",
+      description: "Vos données ont été enregistrées. L'IA va adapter vos recommandations.",
+    });
+    setIsUpdateModalOpen(false);
+    setMetricsForm({ emailOpenRate: "", conversionRate: "", newSubscribers: "", pageViews: "" });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -248,7 +271,7 @@ const Analytics = () => {
                       N'oubliez pas de mettre à jour vos métriques chaque semaine pour que l'IA puisse 
                       analyser vos résultats et adapter votre stratégie
                     </p>
-                    <Button variant="secondary">
+                    <Button variant="secondary" onClick={() => setIsUpdateModalOpen(true)}>
                       Mettre à jour maintenant
                     </Button>
                   </div>
@@ -256,6 +279,68 @@ const Analytics = () => {
               </Card>
             </ContextualTooltip>
           </div>
+
+          {/* Modal de mise à jour des métriques */}
+          <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Mettre à jour vos métriques</DialogTitle>
+                <DialogDescription>
+                  Entrez vos dernières données pour que l'IA puisse affiner vos recommandations.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emailOpenRate">Taux d'ouverture emails (%)</Label>
+                  <Input
+                    id="emailOpenRate"
+                    type="number"
+                    placeholder="ex: 34.2"
+                    value={metricsForm.emailOpenRate}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, emailOpenRate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="conversionRate">Taux de conversion (%)</Label>
+                  <Input
+                    id="conversionRate"
+                    type="number"
+                    placeholder="ex: 8.7"
+                    value={metricsForm.conversionRate}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, conversionRate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newSubscribers">Nouveaux abonnés</Label>
+                  <Input
+                    id="newSubscribers"
+                    type="number"
+                    placeholder="ex: 1247"
+                    value={metricsForm.newSubscribers}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, newSubscribers: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pageViews">Pages vues</Label>
+                  <Input
+                    id="pageViews"
+                    type="number"
+                    placeholder="ex: 12400"
+                    value={metricsForm.pageViews}
+                    onChange={(e) => setMetricsForm({ ...metricsForm, pageViews: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsUpdateModalOpen(false)}>
+                  Annuler
+                </Button>
+                <Button onClick={handleMetricsUpdate}>
+                  Enregistrer
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </SidebarProvider>
