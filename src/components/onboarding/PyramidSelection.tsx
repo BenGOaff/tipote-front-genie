@@ -147,7 +147,7 @@ export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionPr
 
       toast({
         title: "Pyramide sélectionnée !",
-        description: "Vos tâches ont été générées. Bienvenue dans Tipote™ !",
+        description: "Tes tâches ont été générées. Bienvenue dans Tipote™ !",
       });
 
       if (onComplete) {
@@ -159,7 +159,7 @@ export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionPr
       console.error("Error saving pyramid:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder votre choix.",
+        description: "Impossible de sauvegarder ton choix.",
         variant: "destructive",
       });
     } finally {
@@ -175,9 +175,9 @@ export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionPr
             <Sparkles className="w-8 h-8 text-primary-foreground" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-display font-bold">Génération de vos stratégies...</h2>
+            <h2 className="text-2xl font-display font-bold">Génération de tes stratégies...</h2>
             <p className="text-muted-foreground">
-              L'IA analyse votre profil pour créer 3 pyramides d'offres personnalisées
+              L'IA analyse ton profil pour créer 3 pyramides d'offres personnalisées
             </p>
           </div>
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
@@ -206,11 +206,11 @@ export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionPr
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="text-center space-y-3">
             <h1 className="text-3xl font-display font-bold">
-              Choisissez votre stratégie
+              Choisis ta stratégie
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Basé sur votre profil, l'IA a créé 3 pyramides d'offres adaptées à votre situation. 
-              Choisissez celle qui correspond le mieux à votre vision.
+              Basé sur ton profil, l'IA a créé 3 pyramides d'offres adaptées à ta situation. 
+              Choisis celle qui correspond le mieux à ta vision.
             </p>
           </div>
 
@@ -302,7 +302,7 @@ export const PyramidSelection = ({ profileData, onComplete }: PyramidSelectionPr
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            Vous pourrez modifier vos offres à tout moment dans les paramètres.
+            Tu pourras modifier tes offres à tout moment dans les paramètres.
           </p>
         </div>
       </main>

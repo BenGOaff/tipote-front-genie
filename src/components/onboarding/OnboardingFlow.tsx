@@ -140,7 +140,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
       toast({
         title: "Profil configuré !",
-        description: "Choisissez maintenant votre stratégie.",
+        description: "Choisis maintenant ta stratégie.",
       });
 
       // Pass data to parent for pyramid selection
@@ -173,7 +173,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       console.error("Erreur onboarding:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder votre profil.",
+        description: "Impossible de sauvegarder ton profil.",
         variant: "destructive",
       });
     } finally {

@@ -204,12 +204,12 @@ const MyContent = () => {
                 <p className="text-muted-foreground">Chargement...</p>
               </Card>
             ) : filteredContents.length === 0 ? (
-              <Card className="p-8 text-center">
-                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-bold mb-2">Aucun contenu</h3>
-                <p className="text-muted-foreground mb-4">
-                  Commencez par créer votre premier contenu
-                </p>
+            <Card className="p-8 text-center">
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-bold mb-2">Aucun contenu</h3>
+              <p className="text-muted-foreground mb-4">
+                Commence par créer ton premier contenu
+              </p>
                 <Link to="/dashboard/create">
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
@@ -292,7 +292,7 @@ const MyContent = () => {
           <DialogHeader>
             <DialogTitle>Modifier le contenu</DialogTitle>
             <DialogDescription>
-              Modifiez les informations de votre contenu
+              Modifie les informations de ton contenu
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

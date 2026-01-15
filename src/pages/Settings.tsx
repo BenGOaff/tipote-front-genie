@@ -136,7 +136,7 @@ const Settings = () => {
                 <Card className="p-6">
                   <h3 className="text-lg font-bold mb-6">Niche et Persona</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Généré automatiquement après l'onboarding. Vous pouvez le modifier ici.
+                    Généré automatiquement après l'onboarding. Tu peux le modifier ici.
                   </p>
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -186,7 +186,7 @@ const Settings = () => {
                 <Card className="p-6">
                   <h3 className="text-lg font-bold mb-6">Liste des offres</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Ajoutez vos offres pour les utiliser dans les modules de génération.
+                    Ajoute tes offres pour les utiliser dans les modules de génération.
                   </p>
                   <div className="space-y-3">
                     <div className="flex gap-3">
@@ -315,7 +315,7 @@ const Settings = () => {
                 <Card className="p-6">
                   <h3 className="text-lg font-bold mb-4">API Systeme.io</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Connectez votre compte Systeme.io pour synchroniser vos contacts et ventes.
+                    Connecte ton compte Systeme.io pour synchroniser tes contacts et ventes.
                   </p>
                   <div className="flex gap-2">
                     <Input type="password" placeholder="Votre clé API Systeme.io" className="flex-1" />
