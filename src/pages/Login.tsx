@@ -79,7 +79,7 @@ const Login = () => {
     } else {
       toast({
         title: "Email envoyé",
-        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
+        description: "Vérifie ta boîte mail pour réinitialiser ton mot de passe",
       });
       setMode("login");
     }
@@ -122,7 +122,7 @@ const Login = () => {
     } else {
       toast({
         title: "Mot de passe défini !",
-        description: "Vous pouvez maintenant vous connecter",
+        description: "Tu peux maintenant te connecter",
       });
       navigate("/dashboard");
     }
@@ -145,7 +145,7 @@ const Login = () => {
             Tipote<span className="text-primary">™</span>
           </h1>
           <p className="text-muted-foreground mt-2">
-            Votre assistant stratégique intelligent
+            Ton assistant stratégique intelligent
           </p>
         </div>
 
@@ -157,9 +157,9 @@ const Login = () => {
               {mode === "set-password" && "Définir votre mot de passe"}
             </CardTitle>
             <CardDescription className="text-center">
-              {mode === "login" && "Entrez vos identifiants pour accéder à votre compte"}
-              {mode === "forgot" && "Entrez votre email pour recevoir un lien de réinitialisation"}
-              {mode === "set-password" && "Choisissez un mot de passe pour sécuriser votre compte"}
+              {mode === "login" && "Entre tes identifiants pour accéder à ton compte"}
+              {mode === "forgot" && "Entre ton email pour recevoir un lien de réinitialisation"}
+              {mode === "set-password" && "Choisis un mot de passe pour sécuriser ton compte"}
             </CardDescription>
           </CardHeader>
           <CardContent>

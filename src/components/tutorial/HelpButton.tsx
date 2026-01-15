@@ -24,7 +24,7 @@ export function HelpButton() {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem asChild>
             <a
-              href="https://help.tipote.com"
+              href="https://www.tipote.com/search"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 cursor-pointer"

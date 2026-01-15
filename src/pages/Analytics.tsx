@@ -28,7 +28,7 @@ const Analytics = () => {
     // Ici on pourrait sauvegarder vers Supabase
     toast({
       title: "Métriques mises à jour !",
-      description: "Vos données ont été enregistrées. L'IA va adapter vos recommandations.",
+      description: "Tes données ont été enregistrées. L'IA va adapter tes recommandations.",
     });
     setIsUpdateModalOpen(false);
     setMetricsForm({ emailOpenRate: "", conversionRate: "", newSubscribers: "", pageViews: "" });
@@ -54,8 +54,8 @@ const Analytics = () => {
             {/* Period Selector */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-display font-bold">Vos performances</h2>
-                <p className="text-muted-foreground">Suivez et optimisez vos résultats</p>
+                <h2 className="text-2xl font-display font-bold">Tes performances</h2>
+                <p className="text-muted-foreground">Suis et optimise tes résultats</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">7 jours</Button>
@@ -265,11 +265,11 @@ const Analytics = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-xl font-bold text-primary-foreground mb-2">
-                      Mettre à jour vos données
+                      Mettre à jour tes données
                     </h3>
                     <p className="text-primary-foreground/90 mb-4">
-                      N'oubliez pas de mettre à jour vos métriques chaque semaine pour que l'IA puisse 
-                      analyser vos résultats et adapter votre stratégie
+                      N'oublie pas de mettre à jour tes métriques chaque semaine pour que l'IA puisse 
+                      analyser tes résultats et adapter ta stratégie
                     </p>
                     <Button variant="secondary" onClick={() => setIsUpdateModalOpen(true)}>
                       Mettre à jour maintenant
@@ -284,9 +284,9 @@ const Analytics = () => {
           <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Mettre à jour vos métriques</DialogTitle>
+                <DialogTitle>Mettre à jour tes métriques</DialogTitle>
                 <DialogDescription>
-                  Entrez vos dernières données pour que l'IA puisse affiner vos recommandations.
+                  Entre tes dernières données pour que l'IA puisse affiner tes recommandations.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">

@@ -77,10 +77,10 @@ const MyStrategy = () => {
               <div className="flex items-start justify-between mb-6">
                 <div>
                   <h2 className="text-3xl font-display font-bold text-primary-foreground mb-3">
-                    Votre Vision Stratégique
+                    Ta Vision Stratégique
                   </h2>
                   <p className="text-primary-foreground/90 text-lg max-w-2xl">
-                    Plan personnalisé généré par l'IA pour atteindre vos objectifs business
+                    Plan personnalisé généré par l'IA pour atteindre tes objectifs business
                   </p>
                 </div>
                 <Target className="w-16 h-16 text-primary-foreground/80 hidden lg:block" />

@@ -155,7 +155,7 @@ const Create = () => {
       if (data?.content) {
         toast({
           title: "Contenu généré !",
-          description: "Vous pouvez maintenant le modifier avant de le sauvegarder",
+          description: "Tu peux maintenant le modifier avant de le sauvegarder",
         });
         return data.content;
       }
@@ -177,7 +177,7 @@ const Create = () => {
     if (!data.title?.trim()) {
       toast({
         title: "Titre requis",
-        description: "Veuillez entrer un titre pour sauvegarder",
+        description: "Entre un titre pour sauvegarder",
         variant: "destructive",
       });
       return;
@@ -248,10 +248,10 @@ const Create = () => {
                     Propulsé par IA
                   </Badge>
                   <h2 className="text-2xl font-bold mb-2">
-                    Quel type de contenu souhaitez-vous créer ?
+                    Quel type de contenu veux-tu créer ?
                   </h2>
                   <p className="text-primary-foreground/80">
-                    L'IA utilisera vos paramètres d'onboarding pour générer du contenu aligné avec votre stratégie
+                    L'IA utilisera tes paramètres d'onboarding pour générer du contenu aligné avec ta stratégie
                   </p>
                 </Card>
 
