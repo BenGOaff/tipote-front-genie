@@ -235,20 +235,20 @@ const Analytics = () => {
                   <div key={i}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium">{goal.label}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {goal.current} / {goal.target}
-                      </span>
-                    </div>
-                    <div className="relative">
-                      <div className="h-3 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full gradient-primary rounded-full transition-all duration-500"
-                          style={{ width: `${goal.progress}%` }}
-                        />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                          {goal.current} / {goal.target}
+                        </span>
+                        <span className="text-xs font-medium text-primary whitespace-nowrap">
+                          ({goal.progress}%)
+                        </span>
                       </div>
-                      <span className="absolute -right-0 -top-7 text-xs font-medium text-primary">
-                        {goal.progress}%
-                      </span>
+                    </div>
+                    <div className="h-3 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full gradient-primary rounded-full transition-all duration-500"
+                        style={{ width: `${goal.progress}%` }}
+                      />
                     </div>
                   </div>
                 ))}
