@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-pyramids]
 verify_jwt = false
+
+[functions.analyze-metrics]
+verify_jwt = false

@@ -56,6 +56,66 @@ export type Database = {
         }
         Relationships: []
       }
+      metrics: {
+        Row: {
+          ai_analysis: string | null
+          avg_basket: number | null
+          capture_rate: number | null
+          conversion_rate: number | null
+          created_at: string
+          email_click_rate: number | null
+          email_open_rate: number | null
+          id: string
+          month: string
+          new_subscribers: number | null
+          revenue: number | null
+          sales_count: number | null
+          sales_page_views: number | null
+          subscriber_value: number | null
+          updated_at: string
+          user_id: string
+          visitors: number | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          avg_basket?: number | null
+          capture_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          email_click_rate?: number | null
+          email_open_rate?: number | null
+          id?: string
+          month: string
+          new_subscribers?: number | null
+          revenue?: number | null
+          sales_count?: number | null
+          sales_page_views?: number | null
+          subscriber_value?: number | null
+          updated_at?: string
+          user_id: string
+          visitors?: number | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          avg_basket?: number | null
+          capture_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          email_click_rate?: number | null
+          email_open_rate?: number | null
+          id?: string
+          month?: string
+          new_subscribers?: number | null
+          revenue?: number | null
+          sales_count?: number | null
+          sales_page_views?: number | null
+          subscriber_value?: number | null
+          updated_at?: string
+          user_id?: string
+          visitors?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age_range: string | null
