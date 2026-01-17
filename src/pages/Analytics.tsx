@@ -11,6 +11,7 @@ import { ContextualTooltip } from "@/components/tutorial/ContextualTooltip";
 import { useMetrics } from "@/hooks/useMetrics";
 import { MetricsForm } from "@/components/analytics/MetricsForm";
 import { MetricsSummary } from "@/components/analytics/MetricsSummary";
+import { MetricsChart } from "@/components/analytics/MetricsChart";
 import { AnalysisCard } from "@/components/analytics/AnalysisCard";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -64,7 +65,10 @@ const Analytics = () => {
                 ))}
               </div>
             ) : (
-              <MetricsSummary metrics={latestMetrics} previousMetrics={previousMetrics} />
+              <>
+                <MetricsSummary metrics={latestMetrics} previousMetrics={previousMetrics} />
+                <MetricsChart metrics={metrics} />
+              </>
             )}
 
             {/* Main Tabs */}
