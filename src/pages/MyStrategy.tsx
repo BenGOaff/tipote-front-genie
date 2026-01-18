@@ -6,37 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  DndContext, 
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { SortableTask } from "@/components/strategy/SortableTask";
-import { AddTaskDialog } from "@/components/strategy/AddTaskDialog";
+import { PhaseDetailModal } from "@/components/strategy/PhaseDetailModal";
+import { OfferDetailModal } from "@/components/strategy/OfferDetailModal";
 import { 
   Target, 
-  TrendingUp, 
   Users, 
-  DollarSign, 
   CheckCircle2, 
   ArrowRight,
   Layers,
   Clock,
-  Plus,
   Pencil,
   X,
-  Save
+  Save,
+  ChevronRight,
+  Gift,
+  Zap,
+  Crown
 } from "lucide-react";
 
 interface Task {
@@ -52,6 +39,17 @@ interface Phase {
   tasks: Task[];
 }
 
+interface Offer {
+  title: string;
+  price: string;
+  description: string;
+  why?: string;
+  whyPrice?: string;
+  whatToCreate?: string[];
+  howToCreate?: string;
+  howToPromote?: string[];
+}
+
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const initialPhases: Phase[] = [
@@ -64,6 +62,8 @@ const initialPhases: Phase[] = [
       { id: generateId(), task: "Configurer l'email marketing", done: true },
       { id: generateId(), task: "Publier 10 posts stratégiques", done: true },
       { id: generateId(), task: "Lancer la campagne pub", done: false },
+      { id: generateId(), task: "Créer la page de capture", done: false },
+      { id: generateId(), task: "Définir le calendrier éditorial", done: false },
     ],
   },
   {
@@ -75,6 +75,7 @@ const initialPhases: Phase[] = [
       { id: generateId(), task: "Optimiser le tunnel de vente", done: false },
       { id: generateId(), task: "Créer 20 contenus vidéo", done: false },
       { id: generateId(), task: "Collaborations influenceurs", done: false },
+      { id: generateId(), task: "A/B test pages de vente", done: false },
     ],
   },
   {
@@ -86,111 +87,77 @@ const initialPhases: Phase[] = [
       { id: generateId(), task: "Automatiser le nurturing", done: false },
       { id: generateId(), task: "Webinar de vente", done: false },
       { id: generateId(), task: "Programme d'affiliation", done: false },
+      { id: generateId(), task: "Scaling pub payante", done: false },
     ],
   },
 ];
 
+const initialOffers: Record<"lead_magnet" | "low_ticket" | "high_ticket", Offer> = {
+  lead_magnet: {
+    title: "Guide PDF : 10 stratégies de contenu gagnantes",
+    price: "Gratuit",
+    description: "Un guide actionnable pour créer du contenu qui convertit",
+  },
+  low_ticket: {
+    title: "Formation complète stratégie de contenu",
+    price: "497€",
+    description: "Maîtrise tous les aspects de la création de contenu rentable",
+  },
+  high_ticket: {
+    title: "Programme de coaching stratégique 3 mois",
+    price: "1 997€",
+    description: "Accompagnement personnalisé pour transformer ton business",
+  },
+};
+
+const TASKS_DISPLAY_LIMIT = 4;
+
 const MyStrategy = () => {
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
   const [phases, setPhases] = useState<Phase[]>(initialPhases);
-  const [savedPhases, setSavedPhases] = useState<Phase[]>(initialPhases);
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = useCallback((event: DragEndEvent, phaseIndex: number) => {
-    const { active, over } = event;
-    
-    if (over && active.id !== over.id) {
-      setPhases((prevPhases) => {
-        const newPhases = [...prevPhases];
-        const phase = newPhases[phaseIndex];
-        const oldIndex = phase.tasks.findIndex((t) => t.id === active.id);
-        const newIndex = phase.tasks.findIndex((t) => t.id === over.id);
-        
-        newPhases[phaseIndex] = {
-          ...phase,
-          tasks: arrayMove(phase.tasks, oldIndex, newIndex),
-        };
-        
-        return newPhases;
-      });
-    }
-  }, []);
+  const [offers, setOffers] = useState(initialOffers);
+  const [selectedPhaseIndex, setSelectedPhaseIndex] = useState<number | null>(null);
+  const [selectedOfferType, setSelectedOfferType] = useState<"lead_magnet" | "low_ticket" | "high_ticket" | null>(null);
 
   const toggleTask = useCallback((taskId: string) => {
     setPhases((prevPhases) => {
-      return prevPhases.map((phase) => ({
-        ...phase,
-        tasks: phase.tasks.map((task) =>
+      return prevPhases.map((phase) => {
+        const taskIndex = phase.tasks.findIndex((t) => t.id === taskId);
+        if (taskIndex === -1) return phase;
+        
+        const newTasks = phase.tasks.map((task) =>
           task.id === taskId ? { ...task, done: !task.done } : task
-        ),
-      }));
+        );
+        const completedTasks = newTasks.filter((t) => t.done).length;
+        const progress = newTasks.length > 0 ? Math.round((completedTasks / newTasks.length) * 100) : 0;
+        
+        return { ...phase, tasks: newTasks, progress };
+      });
     });
   }, []);
 
-  const deleteTask = useCallback((taskId: string) => {
-    setPhases((prevPhases) => {
-      return prevPhases.map((phase) => ({
-        ...phase,
-        tasks: phase.tasks.filter((task) => task.id !== taskId),
-      }));
-    });
-  }, []);
-
-  const addTask = useCallback((taskName: string, phaseIndex: number) => {
+  const handleUpdatePhase = useCallback((phaseIndex: number, updatedPhase: Phase) => {
     setPhases((prevPhases) => {
       const newPhases = [...prevPhases];
-      newPhases[phaseIndex] = {
-        ...newPhases[phaseIndex],
-        tasks: [
-          ...newPhases[phaseIndex].tasks,
-          { id: generateId(), task: taskName, done: false },
-        ],
-      };
+      newPhases[phaseIndex] = updatedPhase;
       return newPhases;
     });
-  }, []);
-
-  const updateProgress = useCallback((phases: Phase[]): Phase[] => {
-    return phases.map((phase) => {
-      const totalTasks = phase.tasks.length;
-      const completedTasks = phase.tasks.filter((t) => t.done).length;
-      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-      return { ...phase, progress };
-    });
-  }, []);
-
-  const handleStartEditing = () => {
-    setSavedPhases(phases);
-    setIsEditing(true);
-  };
-
-  const handleCancelEditing = () => {
-    setPhases(savedPhases);
-    setIsEditing(false);
-  };
-
-  const handleSaveChanges = () => {
-    const updatedPhases = updateProgress(phases);
-    setPhases(updatedPhases);
-    setSavedPhases(updatedPhases);
-    setIsEditing(false);
     toast({
-      title: "Modifications enregistrées",
-      description: "Ta stratégie a été mise à jour avec succès",
+      title: "Phase mise à jour",
+      description: "Les modifications ont été enregistrées",
     });
-  };
+  }, [toast]);
+
+  const handleUpdateOffer = useCallback((offerType: "lead_magnet" | "low_ticket" | "high_ticket", updatedOffer: Offer) => {
+    setOffers((prev) => ({
+      ...prev,
+      [offerType]: updatedOffer,
+    }));
+    toast({
+      title: "Offre mise à jour",
+      description: "Les modifications ont été enregistrées",
+    });
+  }, [toast]);
 
   const totalTasks = phases.reduce((acc, phase) => acc + phase.tasks.length, 0);
   const completedTasks = phases.reduce(
@@ -210,46 +177,9 @@ const MyStrategy = () => {
             <div className="ml-4 flex-1">
               <h1 className="text-xl font-display font-bold">Ma Stratégie</h1>
             </div>
-            
-            {isEditing ? (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={handleCancelEditing}>
-                  <X className="w-4 h-4 mr-2" />
-                  Annuler
-                </Button>
-                <Button onClick={handleSaveChanges}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Enregistrer
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={handleStartEditing}>
-                <Pencil className="w-4 h-4 mr-2" />
-                Personnaliser
-              </Button>
-            )}
           </header>
 
           <div className="p-6 space-y-6 max-w-7xl mx-auto">
-            {/* Edit Mode Banner */}
-            {isEditing && (
-              <Card className="p-4 bg-primary/5 border-primary/20">
-                <div className="flex items-center gap-3">
-                  <Pencil className="w-5 h-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="font-medium text-primary">Mode personnalisation</p>
-                    <p className="text-sm text-muted-foreground">
-                      Glisse les tâches pour les réorganiser, supprime celles qui ne te conviennent pas, ou ajoute-en de nouvelles
-                    </p>
-                  </div>
-                  <Button onClick={() => setIsAddTaskOpen(true)} size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Ajouter une tâche
-                  </Button>
-                </div>
-              </Card>
-            )}
-
             {/* Strategic Overview */}
             <Card className="p-8 gradient-hero border-border/50">
               <div className="flex items-start justify-between mb-6">
@@ -327,73 +257,64 @@ const MyStrategy = () => {
 
                 {/* Phases */}
                 <div className="space-y-6">
-                  {phases.map((phase, phaseIndex) => (
-                    <Card key={phaseIndex} className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold">{phase.title}</h3>
-                          <p className="text-sm text-muted-foreground">{phase.period}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {isEditing && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsAddTaskOpen(true)}
-                              className="text-primary hover:text-primary"
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Ajouter
-                            </Button>
-                          )}
-                          <Badge variant={phase.progress === 100 ? "default" : phase.progress > 0 ? "secondary" : "outline"}>
-                            {phase.progress}%
-                          </Badge>
-                        </div>
-                      </div>
-                      <Progress value={phase.progress} className="mb-4" />
-                      
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={(event) => handleDragEnd(event, phaseIndex)}
+                  {phases.map((phase, phaseIndex) => {
+                    const displayedTasks = phase.tasks.slice(0, TASKS_DISPLAY_LIMIT);
+                    const hasMoreTasks = phase.tasks.length > TASKS_DISPLAY_LIMIT;
+                    
+                    return (
+                      <Card 
+                        key={phaseIndex} 
+                        className="p-6 cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => setSelectedPhaseIndex(phaseIndex)}
                       >
-                        <SortableContext
-                          items={phase.tasks.map((t) => t.id)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          <div className="grid md:grid-cols-2 gap-3">
-                            {phase.tasks.map((task) => (
-                              <SortableTask
-                                key={task.id}
-                                task={task}
-                                isEditing={isEditing}
-                                onToggle={toggleTask}
-                                onDelete={deleteTask}
-                              />
-                            ))}
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="text-lg font-bold">{phase.title}</h3>
+                            <p className="text-sm text-muted-foreground">{phase.period}</p>
                           </div>
-                        </SortableContext>
-                      </DndContext>
-                      
-                      {phase.tasks.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <p>Aucune tâche dans cette phase</p>
-                          {isEditing && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-2"
-                              onClick={() => setIsAddTaskOpen(true)}
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Ajouter une tâche
-                            </Button>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Badge variant={phase.progress === 100 ? "default" : phase.progress > 0 ? "secondary" : "outline"}>
+                              {phase.progress}%
+                            </Badge>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                          </div>
                         </div>
-                      )}
-                    </Card>
-                  ))}
+                        <Progress value={phase.progress} className="mb-4" />
+                        
+                        <div className="grid md:grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
+                          {displayedTasks.map((task) => (
+                            <div
+                              key={task.id}
+                              className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                            >
+                              <Checkbox 
+                                checked={task.done} 
+                                onCheckedChange={() => toggleTask(task.id)}
+                              />
+                              <span className={`flex-1 ${task.done ? "line-through text-muted-foreground" : ""}`}>
+                                {task.task}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {hasMoreTasks && (
+                          <div className="mt-4 text-center">
+                            <Button variant="ghost" size="sm" className="text-primary">
+                              Voir les {phase.tasks.length - TASKS_DISPLAY_LIMIT} autres tâches
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {phase.tasks.length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p>Aucune tâche dans cette phase</p>
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
                 </div>
 
                 {/* Next Step */}
@@ -420,54 +341,82 @@ const MyStrategy = () => {
                     <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                       <Layers className="w-5 h-5 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl font-bold">Pyramide d'Offres</h3>
+                    <div>
+                      <h3 className="text-xl font-bold">Pyramide d'Offres</h3>
+                      <p className="text-sm text-muted-foreground">Clique sur une offre pour voir les détails</p>
+                    </div>
                   </div>
                   
                   <div className="space-y-4">
-                    <div className="p-5 rounded-lg border-2 border-success bg-success/5">
+                    {/* High Ticket */}
+                    <div 
+                      className="p-5 rounded-lg border-2 border-amber-500/30 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors group"
+                      onClick={() => setSelectedOfferType("high_ticket")}
+                    >
                       <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="font-semibold text-success">High Ticket</p>
-                          <p className="text-3xl font-bold mt-1">1 997€</p>
+                        <div className="flex items-center gap-3">
+                          <Crown className="w-5 h-5 text-amber-500" />
+                          <div>
+                            <p className="font-semibold text-amber-500">High Ticket</p>
+                            <p className="text-lg font-bold mt-1">{offers.high_ticket.title}</p>
+                          </div>
                         </div>
-                        <CheckCircle2 className="w-5 h-5 text-success" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold">{offers.high_ticket.price}</span>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                      <p className="text-muted-foreground mt-2">
-                        Programme de coaching stratégique 3 mois
+                      <p className="text-muted-foreground text-sm ml-8">
+                        {offers.high_ticket.description}
                       </p>
                     </div>
 
-                    <div className="p-5 rounded-lg border-2 border-primary bg-primary/5">
+                    {/* Low Ticket */}
+                    <div 
+                      className="p-5 rounded-lg border-2 border-primary/30 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors group"
+                      onClick={() => setSelectedOfferType("low_ticket")}
+                    >
                       <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="font-semibold text-primary">Middle Ticket</p>
-                          <p className="text-3xl font-bold mt-1">497€</p>
+                        <div className="flex items-center gap-3">
+                          <Zap className="w-5 h-5 text-primary" />
+                          <div>
+                            <p className="font-semibold text-primary">Low Ticket</p>
+                            <p className="text-lg font-bold mt-1">{offers.low_ticket.title}</p>
+                          </div>
                         </div>
-                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold">{offers.low_ticket.price}</span>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                      <p className="text-muted-foreground mt-2">
-                        Formation complète stratégie de contenu
+                      <p className="text-muted-foreground text-sm ml-8">
+                        {offers.low_ticket.description}
                       </p>
                     </div>
 
-                    <div className="p-5 rounded-lg border-2 border-secondary bg-secondary/5">
+                    {/* Lead Magnet */}
+                    <div 
+                      className="p-5 rounded-lg border-2 border-green-500/30 bg-green-500/5 cursor-pointer hover:bg-green-500/10 transition-colors group"
+                      onClick={() => setSelectedOfferType("lead_magnet")}
+                    >
                       <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="font-semibold text-secondary">Lead Magnet</p>
-                          <p className="text-3xl font-bold mt-1">Gratuit</p>
+                        <div className="flex items-center gap-3">
+                          <Gift className="w-5 h-5 text-green-500" />
+                          <div>
+                            <p className="font-semibold text-green-500">Lead Magnet</p>
+                            <p className="text-lg font-bold mt-1">{offers.lead_magnet.title}</p>
+                          </div>
                         </div>
-                        <CheckCircle2 className="w-5 h-5 text-secondary" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold">{offers.lead_magnet.price}</span>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                      <p className="text-muted-foreground mt-2">
-                        Guide PDF : 10 stratégies de contenu gagnantes
+                      <p className="text-muted-foreground text-sm ml-8">
+                        {offers.lead_magnet.description}
                       </p>
                     </div>
                   </div>
-
-                  <Button variant="outline" className="w-full mt-6">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Ajouter une offre
-                  </Button>
                 </Card>
               </TabsContent>
 
@@ -512,15 +461,15 @@ const MyStrategy = () => {
                         <p className="text-sm text-muted-foreground mb-3">Objectifs</p>
                         <ul className="space-y-2">
                           <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 rounded-full bg-success mt-2 flex-shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0" />
                             <span>Automatiser la création de contenu</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 rounded-full bg-success mt-2 flex-shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0" />
                             <span>Augmenter les revenus de 50%</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 rounded-full bg-success mt-2 flex-shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-green-500 mt-2 flex-shrink-0" />
                             <span>Développer une audience engagée</span>
                           </li>
                         </ul>
@@ -539,6 +488,7 @@ const MyStrategy = () => {
                   </div>
 
                   <Button variant="outline" className="w-full mt-6">
+                    <Pencil className="w-4 h-4 mr-2" />
                     Modifier le persona
                   </Button>
                 </Card>
@@ -548,12 +498,27 @@ const MyStrategy = () => {
         </main>
       </div>
 
-      <AddTaskDialog
-        isOpen={isAddTaskOpen}
-        onClose={() => setIsAddTaskOpen(false)}
-        onAdd={addTask}
-        phases={phases}
-      />
+      {/* Phase Detail Modal */}
+      {selectedPhaseIndex !== null && (
+        <PhaseDetailModal
+          isOpen={selectedPhaseIndex !== null}
+          onClose={() => setSelectedPhaseIndex(null)}
+          phase={phases[selectedPhaseIndex]}
+          phaseIndex={selectedPhaseIndex}
+          onUpdatePhase={handleUpdatePhase}
+        />
+      )}
+
+      {/* Offer Detail Modal */}
+      {selectedOfferType && (
+        <OfferDetailModal
+          isOpen={selectedOfferType !== null}
+          onClose={() => setSelectedOfferType(null)}
+          offer={offers[selectedOfferType]}
+          offerType={selectedOfferType}
+          onUpdateOffer={(updatedOffer) => handleUpdateOffer(selectedOfferType, updatedOffer)}
+        />
+      )}
     </SidebarProvider>
   );
 };
