@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -10,10 +11,107 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { 
   User, Key, CreditCard, Globe, Brain, CheckCircle2, AlertCircle, 
-  ExternalLink, Lock, Save, Linkedin, Instagram, Youtube, Link
+  ExternalLink, Lock, Save, Linkedin, Instagram, Youtube, Link, AlertTriangle, RotateCcw
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetAccount = async () => {
+    if (!user) return;
+    
+    setIsResetting(true);
+    try {
+      // Delete all user contents
+      await supabase.from("contents").delete().eq("user_id", user.id);
+      
+      // Delete all user tasks
+      await supabase.from("tasks").delete().eq("user_id", user.id);
+      
+      // Delete all user metrics
+      await supabase.from("metrics").delete().eq("user_id", user.id);
+      
+      // Reset profile to initial state
+      await supabase.from("profiles").update({
+        onboarding_completed: false,
+        has_offers: false,
+        offers: [],
+        social_links: [],
+        selected_pyramid: null,
+        pyramid_selected_at: null,
+        tutorial_completed: false,
+        tutorial_context_flags: {},
+        tutorial_step: null,
+        weekly_time: null,
+        financial_goal: null,
+        psychological_goal: null,
+        content_preference: null,
+        preferred_tone: null,
+        first_name: null,
+        age_range: null,
+        gender: null,
+        country: null,
+        business_type: null,
+        maturity: null,
+        audience_size: null,
+        preferred_tones: null,
+        offer_price: null,
+        offer_sales_count: null,
+        mission_statement: null,
+        biggest_blocker: null,
+        social_audience: null,
+        email_list_size: null,
+        weekly_hours: null,
+        main_goal_90_days: null,
+        main_goals: null,
+        unique_value: null,
+        untapped_strength: null,
+        biggest_challenge: null,
+        niche: null,
+        persona: null,
+        success_definition: null,
+        client_feedback: null,
+        communication_style: null,
+        tools_used: null,
+      }).eq("user_id", user.id);
+
+      toast({
+        title: "Compte réinitialisé",
+        description: "Ton Tipote a été remis à zéro. Tu vas être redirigé vers l'onboarding.",
+      });
+
+      // Redirect to onboarding
+      navigate("/onboarding");
+    } catch (error) {
+      console.error("Error resetting account:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réinitialisation.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -86,6 +184,67 @@ const Settings = () => {
                     <Save className="w-4 h-4 mr-2" />
                     Enregistrer
                   </Button>
+                </Card>
+
+                {/* Zone Danger */}
+                <Card className="p-6 border-destructive/50 bg-destructive/5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                    </div>
+                    <h3 className="text-lg font-bold text-destructive">Zone danger</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium mb-2">Réinitialiser mon Tipote</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Tu as changé de voie ou tu t'es perdu en cours de route ? Tu veux repartir à zéro avec ton Tipote et le lancer dans une autre direction ? Clique sur ce bouton. <strong>Attention :</strong> tous les contenus, toutes les tâches et toutes les personnalisations créés depuis ton arrivée seront effacés, tu repartiras de zéro. C'est définitif, tu ne pourras pas revenir en arrière.
+                      </p>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" className="gap-2">
+                            <RotateCcw className="w-4 h-4" />
+                            Réinitialiser mon Tipote
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                              <AlertTriangle className="w-5 h-5" />
+                              Réinitialiser mon Tipote ?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="space-y-2">
+                              <p>
+                                Cette action est <strong>irréversible</strong>. Tu vas perdre :
+                              </p>
+                              <ul className="list-disc list-inside space-y-1 text-sm">
+                                <li>Tous tes contenus créés</li>
+                                <li>Toutes tes tâches</li>
+                                <li>Tes métriques et analyses</li>
+                                <li>Ta stratégie et ta pyramide d'offres</li>
+                                <li>Toutes tes personnalisations</li>
+                              </ul>
+                              <p className="pt-2">
+                                Tu devras refaire l'onboarding pour reconfigurer ton Tipote.
+                              </p>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={handleResetAccount}
+                              disabled={isResetting}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {isResetting ? "Réinitialisation..." : "Oui, réinitialiser"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
                 </Card>
               </TabsContent>
 
