@@ -1,47 +1,141 @@
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { 
   Target, 
-  Sparkles, 
-  CheckCircle2, 
   ArrowRight,
-  Rocket
+  Rocket,
+  MessageCircle,
+  ShoppingBag,
+  Megaphone,
+  Mail,
+  Filter
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface GettingStartedCardProps {
-  hasPyramid: boolean;
-  hasContents: boolean;
   firstName: string | null;
+  hasPyramid: boolean;
+  hasOffers: boolean;
+  hasPosts: boolean;
+  hasEmails: boolean;
+  hasFunnels: boolean;
+  totalContents: number;
 }
 
-export function GettingStartedCard({ hasPyramid, hasContents, firstName }: GettingStartedCardProps) {
-  const steps = [
-    {
-      id: 'pyramid',
-      title: 'Définir ta stratégie',
-      description: 'Choisis ta pyramide d\'offres pour structurer ton business',
-      completed: hasPyramid,
-      link: '/dashboard/strategy',
-      icon: Target,
-    },
-    {
-      id: 'content',
-      title: 'Créer ton premier contenu',
-      description: 'Lance-toi avec ton premier post ou article',
-      completed: hasContents,
-      link: '/dashboard/create',
-      icon: Sparkles,
-    },
-  ];
+interface SuggestedAction {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  icon: React.ComponentType<{ className?: string }>;
+  priority: number;
+}
 
-  const completedSteps = steps.filter(s => s.completed).length;
-  const progressPercent = (completedSteps / steps.length) * 100;
+export function GettingStartedCard({ 
+  firstName, 
+  hasPyramid,
+  hasOffers,
+  hasPosts,
+  hasEmails,
+  hasFunnels,
+  totalContents
+}: GettingStartedCardProps) {
+  
+  // Build contextual suggestions based on user's current situation
+  const getSuggestedActions = (): SuggestedAction[] => {
+    const actions: SuggestedAction[] = [];
 
-  if (completedSteps === steps.length) {
-    return null; // Ne pas afficher si tout est complété
+    // Priority 1: If no pyramid yet (shouldn't happen after onboarding, but safety)
+    if (!hasPyramid) {
+      actions.push({
+        id: 'strategy',
+        title: 'Définir ta stratégie',
+        description: 'Choisis ta pyramide d\'offres pour structurer ton business',
+        link: '/dashboard/strategy',
+        icon: Target,
+        priority: 1,
+      });
+    }
+
+    // Priority 2: Review/refine strategy if pyramid exists
+    if (hasPyramid && totalContents === 0) {
+      actions.push({
+        id: 'review-strategy',
+        title: 'Affiner ta stratégie',
+        description: 'Vérifie et personnalise les offres de ta pyramide',
+        link: '/dashboard/strategy',
+        icon: Target,
+        priority: 2,
+      });
+    }
+
+    // Priority 3: Create offer content if no offers created yet
+    if (!hasOffers && hasPyramid) {
+      actions.push({
+        id: 'create-offer',
+        title: 'Créer ton offre',
+        description: 'Rédige la page de vente de ton premier produit',
+        link: '/dashboard/create',
+        icon: ShoppingBag,
+        priority: 3,
+      });
+    }
+
+    // Priority 4: Create funnel if no funnel yet
+    if (!hasFunnels && hasPyramid) {
+      actions.push({
+        id: 'create-funnel',
+        title: 'Créer ton tunnel',
+        description: 'Construis ton parcours de conversion',
+        link: '/dashboard/create',
+        icon: Filter,
+        priority: 4,
+      });
+    }
+
+    // Priority 5: Create first post if none
+    if (!hasPosts) {
+      actions.push({
+        id: 'create-post',
+        title: 'Créer ton premier post',
+        description: 'Lance-toi avec du contenu sur les réseaux sociaux',
+        link: '/dashboard/create',
+        icon: Megaphone,
+        priority: 5,
+      });
+    }
+
+    // Priority 6: Create email sequence if no emails
+    if (!hasEmails && hasPosts) {
+      actions.push({
+        id: 'create-email',
+        title: 'Créer tes emails',
+        description: 'Prépare ta séquence email pour convertir',
+        link: '/dashboard/create',
+        icon: Mail,
+        priority: 6,
+      });
+    }
+
+    // Always available: Chat with AI coach
+    actions.push({
+      id: 'coach',
+      title: 'Discuter avec le coach IA',
+      description: 'Besoin d\'aide ? Pose tes questions au coach',
+      link: '/dashboard/create', // TODO: link to coach when available
+      icon: MessageCircle,
+      priority: 10,
+    });
+
+    // Sort by priority and take top 3
+    return actions.sort((a, b) => a.priority - b.priority).slice(0, 3);
+  };
+
+  const suggestedActions = getSuggestedActions();
+
+  // Don't show if user is fully set up (has content of multiple types)
+  if (hasPyramid && hasPosts && hasEmails && hasFunnels && totalContents > 5) {
+    return null;
   }
 
   return (
@@ -52,58 +146,47 @@ export function GettingStartedCard({ hasPyramid, hasContents, firstName }: Getti
         </div>
         <div className="flex-1">
           <h2 className="text-xl font-bold mb-1">
-            {firstName ? `Bienvenue ${firstName} !` : 'Bienvenue !'} 🎉
+            {firstName ? `Salut ${firstName} !` : 'Salut !'} 👋
           </h2>
           <p className="text-muted-foreground">
-            Suis ces étapes pour lancer ton Tipote et commencer à créer du contenu stratégique.
+            Voici ce que je te suggère de faire aujourd'hui pour avancer sur ton Tipote.
           </p>
         </div>
         <Badge variant="secondary" className="whitespace-nowrap">
-          {completedSteps}/{steps.length} étapes
+          {suggestedActions.length} actions
         </Badge>
       </div>
 
-      <Progress value={progressPercent} className="h-2 mb-6" />
-
       <div className="space-y-3">
-        {steps.map((step, index) => (
-          <div
-            key={step.id}
-            className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
-              step.completed 
-                ? 'bg-muted/30 border-muted' 
-                : 'bg-background border-border hover:border-primary/50 hover:shadow-sm'
-            }`}
-          >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-              step.completed 
-                ? 'bg-green-100 text-green-600' 
-                : 'bg-primary/10 text-primary'
-            }`}>
-              {step.completed ? (
-                <CheckCircle2 className="w-5 h-5" />
-              ) : (
-                <span className="font-bold text-sm">{index + 1}</span>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`font-semibold ${step.completed ? 'text-muted-foreground line-through' : ''}`}>
-                {step.title}
-              </p>
-              <p className="text-sm text-muted-foreground truncate">
-                {step.description}
-              </p>
-            </div>
-            {!step.completed && (
-              <Link to={step.link}>
-                <Button size="sm" variant="default">
-                  Commencer
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            )}
-          </div>
-        ))}
+        {suggestedActions.map((action, index) => {
+          const Icon = action.icon;
+          return (
+            <Link
+              key={action.id}
+              to={action.link}
+              className="block"
+            >
+              <div className={`flex items-center gap-4 p-4 rounded-lg border transition-all bg-background border-border hover:border-primary/50 hover:shadow-sm cursor-pointer group`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  index === 0 
+                    ? 'gradient-primary' 
+                    : 'bg-secondary'
+                }`}>
+                  <Icon className={`w-5 h-5 ${index === 0 ? 'text-primary-foreground' : 'text-secondary-foreground'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold group-hover:text-primary transition-colors">
+                    {action.title}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {action.description}
+                  </p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </Card>
   );

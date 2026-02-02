@@ -36,7 +36,7 @@ const Today = () => {
     );
   }
 
-  const isNewUser = !stats?.hasPyramid || stats?.totalContents === 0;
+  // Remove isNewUser check - the card handles its own visibility now
   const taskProgress = stats && stats.totalTasks > 0 
     ? Math.round((stats.completedTasks / stats.totalTasks) * 100) 
     : 0;
@@ -61,12 +61,16 @@ const Today = () => {
           </header>
 
           <div className="p-6 space-y-6 max-w-6xl mx-auto">
-            {/* Getting Started for new users */}
-            {isNewUser && (
+            {/* Contextual Getting Started / Suggestions */}
+            {stats && (
               <GettingStartedCard 
-                hasPyramid={stats?.hasPyramid || false}
-                hasContents={stats ? stats.totalContents > 0 : false}
-                firstName={stats?.firstName || null}
+                firstName={stats.firstName}
+                hasPyramid={stats.hasPyramid}
+                hasOffers={stats.hasOffers}
+                hasPosts={stats.hasPosts}
+                hasEmails={stats.hasEmails}
+                hasFunnels={stats.hasFunnels}
+                totalContents={stats.totalContents}
               />
             )}
 

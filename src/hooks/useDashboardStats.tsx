@@ -14,6 +14,14 @@ export interface DashboardStats {
   hasPyramid: boolean;
   onboardingCompleted: boolean;
   firstName: string | null;
+  // Contextual data for smart suggestions
+  hasOffers: boolean;
+  contentsByType: Record<string, number>;
+  hasPosts: boolean;
+  hasEmails: boolean;
+  hasArticles: boolean;
+  hasVideos: boolean;
+  hasFunnels: boolean;
 }
 
 export interface UpcomingContent {
@@ -51,7 +59,7 @@ export function useDashboardStats() {
       // Fetch profile data
       const { data: profile } = await supabase
         .from('profiles')
-        .select('first_name, onboarding_completed, pyramid_selected_at, selected_pyramid')
+        .select('first_name, onboarding_completed, pyramid_selected_at, selected_pyramid, has_offers, offers')
         .eq('user_id', user.id)
         .single();
 
@@ -77,6 +85,12 @@ export function useDashboardStats() {
       const completedTasks = tasksList.filter(t => t.status === 'completed' || t.status === 'done').length;
       const pendingTasks = tasksList.filter(t => t.status !== 'completed' && t.status !== 'done').length;
 
+      // Content by type analysis
+      const contentsByType: Record<string, number> = {};
+      contentsList.forEach(c => {
+        contentsByType[c.type] = (contentsByType[c.type] || 0) + 1;
+      });
+
       setStats({
         totalContents: contentsList.length,
         publishedContents,
@@ -89,6 +103,14 @@ export function useDashboardStats() {
         hasPyramid: !!profile?.pyramid_selected_at,
         onboardingCompleted: !!profile?.onboarding_completed,
         firstName: profile?.first_name || null,
+        // Contextual data
+        hasOffers: !!profile?.has_offers,
+        contentsByType,
+        hasPosts: (contentsByType['post'] || 0) > 0,
+        hasEmails: (contentsByType['email'] || 0) > 0,
+        hasArticles: (contentsByType['article'] || 0) > 0,
+        hasVideos: (contentsByType['video'] || 0) > 0,
+        hasFunnels: (contentsByType['funnel'] || 0) > 0,
       });
 
       // Get upcoming contents (scheduled for today or future, sorted by date)
