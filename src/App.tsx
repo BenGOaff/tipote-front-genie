@@ -16,6 +16,7 @@ import Create from "./pages/Create";
 import MyContent from "./pages/MyContent";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import SystemeTemplates from "./pages/SystemeTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/dashboard/content" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
               <Route path="/dashboard/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/dashboard/templates" element={<ProtectedRoute><SystemeTemplates /></ProtectedRoute>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -4,7 +4,8 @@ import {
   Sparkles,
   FolderOpen,
   Settings, 
-  BarChart3
+  BarChart3,
+  LayoutTemplate
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { TutorialSpotlight } from "@/components/tutorial/TutorialSpotlight";
@@ -26,6 +27,7 @@ const mainItems = [
   { title: "Ma Stratégie", url: "/dashboard/strategy", icon: Target, spotlightId: "strategy" },
   { title: "Créer", url: "/dashboard/create", icon: Sparkles, spotlightId: "create" },
   { title: "Mes Contenus", url: "/dashboard/content", icon: FolderOpen, spotlightId: null },
+  { title: "Templates", url: "/dashboard/templates", icon: LayoutTemplate, spotlightId: null },
 ];
 
 export function AppSidebar() {
