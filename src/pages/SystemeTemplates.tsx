@@ -1,0 +1,276 @@
+import { useState } from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { TemplateCard } from "@/components/templates/TemplateCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, ShoppingCart, Layout } from "lucide-react";
+
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string[];
+  type: "capture" | "sales" | "blog";
+  imageUrl: string;
+  shareLink: string;
+  features: string[];
+  price?: string;
+}
+
+const templates: Template[] = [
+  // CAPTURE TEMPLATES
+  {
+    id: "capture-ads",
+    name: "Capture Ads",
+    description: "Parfait pour proposer un lead magnet, délivrer le lead magnet, puis segmenter ton audience avant de lui envoyer une offre adaptée.",
+    category: ["Business", "Coaching"],
+    type: "capture",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/473100/67baf9eba1f77_templatecapture.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de segmentation", "Page vidéo offerte", "Page de remerciement"],
+    price: "Gratuit"
+  },
+  {
+    id: "dream-team",
+    name: "Dream Team",
+    description: "Idéale pour inscrire tes prospects à un challenge gratuit avec un style luxueux.",
+    category: ["Luxe", "Business"],
+    type: "capture",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc0aa0b1fd_templatesystemeio.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de remerciement"]
+  },
+  {
+    id: "feel-good",
+    name: "Feel Good",
+    description: "Page de capture conçue pour la spiritualité et le bien-être, très facile à personnaliser.",
+    category: ["Bien-être", "Coach"],
+    type: "capture",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc45fdb593_2025-01-06_12-53-43.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de remerciement"]
+  },
+  {
+    id: "simple-orange",
+    name: "Simple Orange",
+    description: "Tunnel parfait pour capturer des participants à un challenge avec un design épuré.",
+    category: ["Business", "Coach"],
+    type: "capture",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc50bafead_2025-01-06_12-56-07.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de remerciement"]
+  },
+  {
+    id: "up-to-challenge",
+    name: "Up to Challenge",
+    description: "Tunnel idéal pour offrir les accès à un challenge gratuit + proposer en upsell des accès VIP !",
+    category: ["Business", "Argent"],
+    type: "capture",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc5b83fe8c_2025-01-06_12-58-57.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de remerciement", "Page vente avec bon de commande", "Page de replay"]
+  },
+
+  // SALES TEMPLATES
+  {
+    id: "mega-event",
+    name: "Mega Event",
+    description: "Tunnel réservé aux personnes ayant déjà des compétences ! Ce tunnel comporte des codes d'animations qui lui donnent un effet WAOUH immédiat.",
+    category: ["Business", "Event", "Coach"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc6716bee0_2025-01-06_13-01-58.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "golden-business",
+    name: "Golden Business",
+    description: "Template Premium Haute qualité idéal pour vendre une formation ou les accès à un événement dans le thème du business.",
+    category: ["Business", "Argent", "Event"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc70b443a1_2025-01-06_13-04-54.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente avec bon de commande", "Page de remerciement"]
+  },
+  {
+    id: "click-tunnel",
+    name: "Click Tunnel",
+    description: "Inspiré d'un challenge célèbre aux USA, ce template est idéal pour vendre les accès à un événement en ligne !",
+    category: ["Webinaire", "Event"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc79967257_2025-01-06_13-07-12.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente avec bon de commande", "Page de remerciement"]
+  },
+  {
+    id: "banger",
+    name: "Banger",
+    description: "Ce funnel permet de proposer de façon claire une formation avec beaucoup de bonus. Frais et dynamique, facile à personnaliser !",
+    category: ["Business", "Formation"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/473100/67b75b59e6705_template-banger-image.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "e-learning",
+    name: "E-Learning",
+    description: "Funnel assez simple à personnaliser, spécialement conçu pour vendre une formation dans la thématique du business.",
+    category: ["Business", "Formation"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/473100/678fde1f3ea23_2025-01-21_18-42-04.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "fresh",
+    name: "Fresh",
+    description: "Ce funnel est simple à personnaliser avec des codes d'animation. Frais et moderne, idéal pour se démarquer avec des couleurs vives !",
+    category: ["Business", "Formation", "Punchy"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/473100/6798dbc333c90_2025-01-28_14-05-07.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Upsell", "Bon de commande", "Page de remerciement"]
+  },
+  {
+    id: "funnel-100k",
+    name: "Funnel 100K",
+    description: "Ce funnel de Pierre Elliott est conçu pour vendre des produits numériques. Il a déjà généré +100K€ !",
+    category: ["Business", "Argent"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc8728fc5d_2025-01-06_13-10-41.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Upsell", "Bon de commande"]
+  },
+  {
+    id: "funnel-fan",
+    name: "Funnel Fan",
+    description: "Tunnel parfait pour proposer un challenge sur le thème des automatisations et du marketing.",
+    category: ["Business", "Automatisation"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc93d609e7_2025-01-06_13-14-18.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "funny-sales",
+    name: "Funny Sales",
+    description: "Tunnel complet, parfait pour vendre un webinaire, un événement ou une formation. Design original et coloré !",
+    category: ["Business", "Fun", "Coloré"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bc9ebde5da_2025-01-06_13-17-23.png",
+    shareLink: "", // À remplir
+    features: ["Page de capture", "Page de remerciement", "Page de vente avec bon de commande"]
+  },
+  {
+    id: "loose-weight",
+    name: "Loose Weight",
+    description: "Construit pour vendre des offres autour de la perte de poids, bien-être et produits physiques. Minimalisme et simplicité.",
+    category: ["Perte de poids", "Fitness"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bcaa59bc1c_2025-01-06_13-20-08.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "sweet-zen",
+    name: "Sweet Zen",
+    description: "Tunnel complet pour vendre une formation ou un programme d'accompagnement dans les thèmes de la spiritualité et du bien-être.",
+    category: ["Spiritualité", "Bien-être"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bcb5179e17_2025-01-06_13-23-04.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+  {
+    id: "video-master",
+    name: "Video Master",
+    description: "Tunnel réservé aux personnes qui ont des vidéos de bonne qualité à mettre en avant, avec des compétences en funnel building.",
+    category: ["Formation vidéo", "Technologie"],
+    type: "sales",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/3969368/677bcbe6ba940_2025-01-06_13-25-35.png",
+    shareLink: "", // À remplir
+    features: ["Page de vente", "Page de remerciement", "Bon de commande"]
+  },
+
+  // BLOG TEMPLATE
+  {
+    id: "blog-coach",
+    name: "Blog Coach",
+    description: "Blog épuré et aux couleurs sobres, parfait pour un coach qui cherche à démontrer son autorité dans son domaine.",
+    category: ["Coaching"],
+    type: "blog",
+    imageUrl: "https://d1yei2z3i6k35z.cloudfront.net/473100/67baf9ab9dcd7_templateblogcoach.png",
+    shareLink: "", // À remplir
+    features: ["Blog complet", "Page de contact", "Page de prise de RDV", "Exemples d'articles", "Page de témoignages", "Page de vente masterclasse", "Mentions légales"],
+    price: "Gratuit"
+  }
+];
+
+export default function SystemeTemplates() {
+  const [activeTab, setActiveTab] = useState("all");
+
+  const filteredTemplates = activeTab === "all" 
+    ? templates 
+    : templates.filter(t => t.type === activeTab);
+
+  const captureCount = templates.filter(t => t.type === "capture").length;
+  const salesCount = templates.filter(t => t.type === "sales").length;
+  const blogCount = templates.filter(t => t.type === "blog").length;
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 md:p-8 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-display font-bold mb-2">
+                Templates Systeme.io
+              </h1>
+              <p className="text-muted-foreground max-w-2xl">
+                Lance ton tunnel de vente rapidement grâce à ces templates personnalisables. 
+                Un clic suffit pour importer le template dans ton compte Systeme.io.
+              </p>
+            </div>
+
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+              <TabsList className="grid w-full max-w-md grid-cols-4">
+                <TabsTrigger value="all" className="flex items-center gap-2">
+                  <Layout className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tous</span>
+                  <span className="text-xs text-muted-foreground">({templates.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="capture" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Capture</span>
+                  <span className="text-xs text-muted-foreground">({captureCount})</span>
+                </TabsTrigger>
+                <TabsTrigger value="sales" className="flex items-center gap-2">
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline">Vente</span>
+                  <span className="text-xs text-muted-foreground">({salesCount})</span>
+                </TabsTrigger>
+                <TabsTrigger value="blog" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Blog</span>
+                  <span className="text-xs text-muted-foreground">({blogCount})</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value={activeTab} className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredTemplates.map((template) => (
+                    <TemplateCard key={template.id} template={template} />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+}
