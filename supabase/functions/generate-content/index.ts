@@ -147,14 +147,27 @@ Structure à fournir:
       }
 
       case "funnel": {
-        const { funnelType, linkedOffer } = body;
+        const { funnelType, linkedOffer, templateName, templateStyle, modification, currentContent } = body;
         const funnelTypeLabels: Record<string, string> = {
           capture_page: "page de capture (opt-in)",
           sales_page: "page de vente",
         };
-        
-        userPrompt = `Crée le copywriting complet pour une ${funnelTypeLabels[funnelType] || funnelType}.
+
+        if (modification && currentContent) {
+          userPrompt = `Voici le copywriting actuel d'une ${funnelTypeLabels[funnelType] || funnelType} pour l'offre "${linkedOffer}":
+
+${currentContent}
+
+Modification demandée par l'utilisateur: "${modification}"
+
+Applique la modification demandée et renvoie le copywriting complet modifié. Garde le même format et la même structure.`;
+        } else {
+          userPrompt = `Crée le copywriting complet pour une ${funnelTypeLabels[funnelType] || funnelType}.
 Offre liée: ${linkedOffer}
+${templateName ? `Template visuel utilisé: ${templateName}` : ""}
+${templateStyle ? `Style/catégorie du template: ${templateStyle}` : ""}
+
+Adapte le ton et le style du copywriting au template visuel choisi.
 
 Structure à fournir pour ${funnelType === "capture_page" ? "la page de capture" : "la page de vente"}:
 ${funnelType === "capture_page" ? `
@@ -178,6 +191,7 @@ ${funnelType === "capture_page" ? `
 12. **Urgence/Rareté** (si applicable)
 `}
 Formatage prêt pour Systeme.io.`;
+        }
         break;
       }
 

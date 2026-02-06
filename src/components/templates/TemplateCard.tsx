@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Download, ExternalLink, Eye, Check } from "lucide-react";
-import type { Template } from "@/pages/SystemeTemplates";
+import type { SystemeTemplate as Template } from "@/data/systemeTemplates";
 import { toast } from "sonner";
 
 interface TemplateCardProps {
