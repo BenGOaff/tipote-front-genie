@@ -27,6 +27,9 @@ Le contenu doit être en ${language === "fr" ? "français" : "anglais"}.
 Utilise un formatage clair avec des sections, des sauts de ligne et du markdown si approprié.`;
 
     let userPrompt = "";
+    let useToolCalling = false;
+    let toolDef: any = null;
+    let toolChoice: any = null;
 
     switch (type) {
       case "post": {
@@ -147,20 +150,42 @@ Structure à fournir:
       }
 
       case "funnel": {
-        const { funnelType, linkedOffer, templateName, templateStyle, modification, currentContent } = body;
+        const { funnelType, linkedOffer, templateName, templateStyle, modification, currentContent, useStructured, pageType } = body;
         const funnelTypeLabels: Record<string, string> = {
           capture_page: "page de capture (opt-in)",
           sales_page: "page de vente",
         };
 
         if (modification && currentContent) {
-          userPrompt = `Voici le copywriting actuel d'une ${funnelTypeLabels[funnelType] || funnelType} pour l'offre "${linkedOffer}":
+          if (useStructured) {
+            // Structured modification
+            userPrompt = `Voici le contenu structuré actuel d'une ${funnelTypeLabels[funnelType] || funnelType} pour l'offre "${linkedOffer}":
+
+${currentContent}
+
+Modification demandée: "${modification}"
+
+Applique la modification et renvoie le contenu modifié au même format JSON structuré.`;
+            useToolCalling = true;
+          } else {
+            userPrompt = `Voici le copywriting actuel d'une ${funnelTypeLabels[funnelType] || funnelType} pour l'offre "${linkedOffer}":
 
 ${currentContent}
 
 Modification demandée par l'utilisateur: "${modification}"
 
 Applique la modification demandée et renvoie le copywriting complet modifié. Garde le même format et la même structure.`;
+          }
+        } else if (useStructured) {
+          // Structured generation with tool calling
+          useToolCalling = true;
+          userPrompt = `Crée le contenu complet pour une ${funnelTypeLabels[funnelType] || funnelType}.
+Offre liée: ${linkedOffer}
+${templateName ? `Template visuel utilisé: ${templateName}` : ""}
+${templateStyle ? `Style/catégorie du template: ${templateStyle}` : ""}
+
+Le contenu doit être percutant, orienté conversion, et adapté au style du template.
+Crée du contenu marketing professionnel et engageant.`;
         } else {
           userPrompt = `Crée le copywriting complet pour une ${funnelTypeLabels[funnelType] || funnelType}.
 Offre liée: ${linkedOffer}
@@ -192,6 +217,63 @@ ${funnelType === "capture_page" ? `
 `}
 Formatage prêt pour Systeme.io.`;
         }
+
+        // Set up tool calling for structured output
+        if (useToolCalling) {
+          if (pageType === "capture" || funnelType === "capture_page") {
+            toolDef = [{
+              type: "function",
+              function: {
+                name: "create_capture_content",
+                description: "Génère le contenu structuré pour une page de capture.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    headline: { type: "string", description: "Headline principale, promesse irrésistible" },
+                    subtitle: { type: "string", description: "Sous-titre qui renforce la promesse" },
+                    bullets: { type: "array", items: { type: "string" }, description: "3-5 bullet points des bénéfices" },
+                    ctaText: { type: "string", description: "Texte du bouton CTA, clair et urgent" },
+                    proofText: { type: "string", description: "Élément de preuve sociale" },
+                  },
+                  required: ["headline", "subtitle", "bullets", "ctaText"],
+                  additionalProperties: false,
+                },
+              },
+            }];
+            toolChoice = { type: "function", function: { name: "create_capture_content" } };
+          } else {
+            toolDef = [{
+              type: "function",
+              function: {
+                name: "create_sales_content",
+                description: "Génère le contenu structuré pour une page de vente.",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    headline: { type: "string" },
+                    subtitle: { type: "string" },
+                    problemTitle: { type: "string" },
+                    problemText: { type: "string" },
+                    solutionTitle: { type: "string" },
+                    solutionText: { type: "string" },
+                    benefits: { type: "array", items: { type: "string" } },
+                    testimonials: { type: "array", items: { type: "object", properties: { name: { type: "string" }, text: { type: "string" } }, required: ["name", "text"] } },
+                    offerTitle: { type: "string" },
+                    offerItems: { type: "array", items: { type: "string" } },
+                    bonuses: { type: "array", items: { type: "string" } },
+                    guarantee: { type: "string" },
+                    ctaText: { type: "string" },
+                    faq: { type: "array", items: { type: "object", properties: { q: { type: "string" }, a: { type: "string" } }, required: ["q", "a"] } },
+                    urgencyText: { type: "string" },
+                  },
+                  required: ["headline", "subtitle", "problemTitle", "problemText", "solutionTitle", "solutionText", "benefits", "testimonials", "offerTitle", "offerItems", "bonuses", "guarantee", "ctaText", "faq"],
+                  additionalProperties: false,
+                },
+              },
+            }];
+            toolChoice = { type: "function", function: { name: "create_sales_content" } };
+          }
+        }
         break;
       }
 
@@ -201,19 +283,26 @@ Formatage prêt pour Systeme.io.`;
 
     console.log("User prompt:", userPrompt);
 
+    const requestBody: any = {
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    };
+
+    if (useToolCalling && toolDef) {
+      requestBody.tools = toolDef;
+      requestBody.tool_choice = toolChoice;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -235,7 +324,17 @@ Formatage prêt pour Systeme.io.`;
     }
 
     const data = await response.json();
-    const generatedContent = data.choices?.[0]?.message?.content || "";
+    
+    let generatedContent: string;
+
+    // Handle tool calling response
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (toolCall) {
+      generatedContent = toolCall.function?.arguments || "{}";
+      console.log("Tool call response, structured content");
+    } else {
+      generatedContent = data.choices?.[0]?.message?.content || "";
+    }
 
     console.log("Generated content length:", generatedContent.length);
 
