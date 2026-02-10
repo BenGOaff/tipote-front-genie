@@ -19,7 +19,7 @@ import {
   Lightbulb,
   Megaphone,
   Camera,
-  MousePointerClick
+  MousePointerClick,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useContents } from "@/hooks/useContents";
@@ -32,6 +32,7 @@ import { ArticleForm } from "@/components/create/forms/ArticleForm";
 import { VideoForm } from "@/components/create/forms/VideoForm";
 import { OfferForm } from "@/components/create/forms/OfferForm";
 import { FunnelForm } from "@/components/create/forms/FunnelForm";
+import { QuizForm } from "@/components/quiz/QuizForm";
 
 const contentTypes = [
   { 
@@ -75,6 +76,13 @@ const contentTypes = [
     description: "Tunnels de vente complets...",
     icon: Route, 
     color: "bg-pink-500" 
+  },
+  { 
+    id: "quiz", 
+    label: "Quiz Lead Magnet", 
+    description: "Quiz viral pour capturer des emails",
+    icon: MousePointerClick, 
+    color: "bg-teal-500" 
   },
 ];
 
@@ -123,7 +131,7 @@ const quickTemplates = [
   },
 ];
 
-type ContentType = "post" | "email" | "article" | "video" | "offer" | "funnel" | null;
+type ContentType = "post" | "email" | "article" | "video" | "offer" | "funnel" | "quiz" | null;
 
 const Create = () => {
   const navigate = useNavigate();
@@ -220,6 +228,8 @@ const Create = () => {
         return <OfferForm {...commonProps} />;
       case "funnel":
         return <FunnelForm {...commonProps} />;
+      case "quiz":
+        return <QuizForm onClose={() => setSelectedType(null)} />;
       default:
         return null;
     }
