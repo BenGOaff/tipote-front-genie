@@ -260,6 +260,196 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_leads: {
+        Row: {
+          bonus_unlocked: boolean | null
+          consent_given: boolean | null
+          created_at: string
+          email: string
+          has_shared: boolean | null
+          id: string
+          quiz_id: string
+          result_id: string | null
+        }
+        Insert: {
+          bonus_unlocked?: boolean | null
+          consent_given?: boolean | null
+          created_at?: string
+          email: string
+          has_shared?: boolean | null
+          id?: string
+          quiz_id: string
+          result_id?: string | null
+        }
+        Update: {
+          bonus_unlocked?: boolean | null
+          consent_given?: boolean | null
+          created_at?: string
+          email?: string
+          has_shared?: boolean | null
+          id?: string
+          quiz_id?: string
+          result_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_leads_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_leads_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          question_text: string
+          quiz_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options?: Json
+          question_text: string
+          quiz_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          question_text?: string
+          quiz_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_results: {
+        Row: {
+          created_at: string
+          cta_text: string | null
+          description: string | null
+          id: string
+          insight: string | null
+          max_score: number | null
+          min_score: number | null
+          projection: string | null
+          quiz_id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          cta_text?: string | null
+          description?: string | null
+          id?: string
+          insight?: string | null
+          max_score?: number | null
+          min_score?: number | null
+          projection?: string | null
+          quiz_id: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          cta_text?: string | null
+          description?: string | null
+          id?: string
+          insight?: string | null
+          max_score?: number | null
+          min_score?: number | null
+          projection?: string | null
+          quiz_id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          bonus_description: string | null
+          consent_text: string | null
+          created_at: string
+          cta_text: string | null
+          cta_url: string | null
+          id: string
+          introduction: string | null
+          privacy_url: string | null
+          share_message: string | null
+          shares_count: number | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number | null
+          virality_enabled: boolean | null
+        }
+        Insert: {
+          bonus_description?: string | null
+          consent_text?: string | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          id?: string
+          introduction?: string | null
+          privacy_url?: string | null
+          share_message?: string | null
+          shares_count?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+          virality_enabled?: boolean | null
+        }
+        Update: {
+          bonus_description?: string | null
+          consent_text?: string | null
+          created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          id?: string
+          introduction?: string | null
+          privacy_url?: string | null
+          share_message?: string | null
+          shares_count?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+          virality_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           category: string | null

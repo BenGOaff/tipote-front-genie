@@ -18,6 +18,8 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import SystemeTemplates from "./pages/SystemeTemplates";
 import NotFound from "./pages/NotFound";
+import PublicQuiz from "./pages/PublicQuiz";
+import QuizDetail from "./pages/QuizDetail";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
               <Route path="/dashboard/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/dashboard/templates" element={<ProtectedRoute><SystemeTemplates /></ProtectedRoute>} />
+              <Route path="/dashboard/quiz/:quizId" element={<ProtectedRoute><QuizDetail /></ProtectedRoute>} />
+              <Route path="/quiz/:quizId" element={<PublicQuiz />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -33,7 +33,8 @@ import {
   Mail,
   Video,
   MessageSquare,
-  Clock
+  Clock,
+  MousePointerClick,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useContents, Content } from "@/hooks/useContents";
@@ -48,6 +49,7 @@ const typeIcons: Record<string, any> = {
   email: Mail,
   article: FileText,
   video: Video,
+  quiz: MousePointerClick,
 };
 
 const statusColors: Record<string, string> = {
